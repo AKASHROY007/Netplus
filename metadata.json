@@ -1,0 +1,5 @@
+{
+  "name": "NetPulse - Real-time Network Monitoring & Analytics",
+  "description": "NetPulse is a professional-grade network monitoring dashboard providing real-time speed tests, detailed usage analytics, app-wise firewall controls, and device management with a modern Material Design interface.",
+  "requestFramePermissions": []
+}
