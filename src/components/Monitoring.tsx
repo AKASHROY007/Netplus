@@ -100,7 +100,7 @@ export default function Monitoring() {
   };
 
   return (
-    <main className="pt-32 pb-32 px-6 max-w-4xl mx-auto space-y-8">
+    <main className="pt-32 px-6 max-w-4xl mx-auto space-y-8 relative">
       {/* Header */}
       <div className="flex items-center justify-between">
         <motion.div 

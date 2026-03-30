@@ -89,7 +89,7 @@ export default function Settings() {
   };
 
   return (
-    <main className="pt-32 pb-32 px-6 max-w-2xl mx-auto space-y-10">
+    <main className="pt-32 px-6 max-w-2xl mx-auto space-y-10 relative">
       {/* Page Title */}
       <motion.section 
         initial={{ opacity: 0, y: 10 }}

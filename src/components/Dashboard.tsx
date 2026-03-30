@@ -7,7 +7,12 @@ import {
   Signal, 
   Network, 
   ChevronRight, 
-  Share
+  Share,
+  X,
+  Clock,
+  MapPin,
+  Activity,
+  ShieldCheck
 } from 'lucide-react';
 import { 
   AreaChart, 
@@ -21,7 +26,7 @@ import {
   Pie,
   Cell
 } from 'recharts';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 
 const GAUGE_DATA = [
@@ -59,13 +64,14 @@ const DATA_SETS: Record<string, any[]> = {
 };
 
 const HISTORY_ITEMS = [
-  { id: 1, name: 'Starlink 12-B (Home_WiFi_5G)', time: 'Today, 10:42 AM • Berlin, DE', download: 342.1, ping: '18', icon: Wifi, color: 'text-primary' },
-  { id: 2, name: 'LTE Mobile 5G', time: 'Yesterday, 08:15 PM • Mobile Data', download: 89.4, ping: '42', icon: Signal, color: 'text-secondary' },
-  { id: 3, name: 'Office Fiber 1', time: '2 days ago • Berlin, DE', download: 944.8, ping: '4', icon: Network, color: 'text-primary' },
+  { id: 1, name: 'Starlink 12-B (Home_WiFi_5G)', time: 'Today, 10:42 AM • Berlin, DE', download: 342.1, upload: 42.5, ping: '18', jitter: '2', icon: Wifi, color: 'text-primary', ip: '192.168.1.1', provider: 'SpaceX Starlink', status: 'Connected' },
+  { id: 2, name: 'LTE Mobile 5G', time: 'Yesterday, 08:15 PM • Mobile Data', download: 89.4, upload: 12.8, ping: '42', jitter: '8', icon: Signal, color: 'text-secondary', ip: '10.0.0.1', provider: 'T-Mobile', status: 'Connected' },
+  { id: 3, name: 'Office Fiber 1', time: '2 days ago • Berlin, DE', download: 944.8, upload: 890.2, ping: '4', jitter: '1', icon: Network, color: 'text-primary', ip: '172.16.0.1', provider: 'Deutsche Telekom', status: 'Disconnected' },
 ];
 
 export default function Dashboard() {
   const [timeRange, setTimeRange] = useState('Daily');
+  const [selectedTest, setSelectedTest] = useState<typeof HISTORY_ITEMS[0] | null>(null);
   const [unit, setUnit] = useState<'Mbps' | 'MB/s'>(() => {
     return (localStorage.getItem('netpulse-unit') as 'Mbps' | 'MB/s') || 'Mbps';
   });
@@ -118,7 +124,7 @@ export default function Dashboard() {
   ];
 
   return (
-    <main className="pt-32 px-6 max-w-5xl mx-auto">
+    <main className="pt-32 px-6 max-w-5xl mx-auto relative">
       {/* Hero Section */}
       <section className="mb-12">
         <header className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
@@ -328,15 +334,27 @@ export default function Dashboard() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.1 }}
+              onClick={() => setSelectedTest(item)}
               className="bg-surface-container p-5 rounded-[1.5rem] flex items-center justify-between hover:bg-surface-container-highest transition-all group cursor-pointer border border-outline-variant/5 hover:border-primary/20"
             >
               <div className="flex items-center gap-5">
-                <div className={cn("w-14 h-14 rounded-2xl bg-surface-container-highest flex items-center justify-center border border-outline-variant/10 group-hover:border-primary/30 transition-colors", item.color)}>
-                  <item.icon className="w-7 h-7" />
+                <div className="relative">
+                  <div className={cn("w-14 h-14 rounded-2xl bg-surface-container-highest flex items-center justify-center border border-outline-variant/10 group-hover:border-primary/30 transition-colors", item.color)}>
+                    <item.icon className="w-7 h-7" />
+                  </div>
+                  {item.status === 'Connected' && (
+                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-background rounded-full flex items-center justify-center">
+                      <div className="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
+                    </div>
+                  )}
                 </div>
                 <div>
-                  <h4 className="font-bold text-on-surface text-lg">{item.name}</h4>
-                  <p className="text-xs text-on-surface-variant font-medium">{item.time}</p>
+                  <h4 className="font-bold text-on-surface text-lg leading-tight">{item.name}</h4>
+                  <div className="flex items-center gap-2 mt-1">
+                    <p className="text-[10px] text-on-surface-variant font-medium">{item.time}</p>
+                    <div className="w-1 h-1 rounded-full bg-outline-variant/30 sm:hidden" />
+                    <p className="text-[10px] font-bold text-primary sm:hidden">{formatValue(Number(item.download))} {unit}</p>
+                  </div>
                 </div>
               </div>
               <div className="flex items-center gap-6 md:gap-12 text-right">
@@ -356,6 +374,118 @@ export default function Dashboard() {
           ))}
         </div>
       </section>
+
+      {/* Test Detail Modal */}
+      <AnimatePresence>
+        {selectedTest && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedTest(null)}
+              className="absolute inset-0 bg-background/80 backdrop-blur-md"
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative w-full max-w-lg bg-surface-container-low rounded-[2.5rem] border border-outline-variant/20 shadow-2xl overflow-hidden"
+            >
+              {/* Modal Header */}
+              <div className="p-8 pb-0 flex justify-between items-start">
+                <div className="flex items-center gap-4">
+                  <div className={cn("w-14 h-14 rounded-2xl bg-surface-container-highest flex items-center justify-center border border-outline-variant/10", selectedTest.color)}>
+                    <selectedTest.icon className="w-8 h-8" />
+                  </div>
+                  <div>
+                    <h3 className="font-headline text-2xl font-bold text-on-surface">{selectedTest.name}</h3>
+                    <div className="flex items-center gap-2 text-on-surface-variant text-xs font-medium">
+                      <Clock className="w-3.5 h-3.5" />
+                      <span>{selectedTest.time}</span>
+                    </div>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setSelectedTest(null)}
+                  className="p-2 rounded-full hover:bg-surface-container-highest transition-colors"
+                >
+                  <X className="w-6 h-6 text-on-surface-variant" />
+                </button>
+              </div>
+
+              {/* Modal Content */}
+              <div className="p-8 space-y-8">
+                {/* Speed Metrics */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-surface-container-highest/50 p-6 rounded-3xl border border-outline-variant/5">
+                    <div className="flex items-center gap-2 mb-2">
+                      <ArrowDown className="w-4 h-4 text-primary" />
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Download</span>
+                    </div>
+                    <p className="font-headline text-3xl font-bold text-primary">{formatValue(selectedTest.download)} <span className="text-sm opacity-60">{unit}</span></p>
+                  </div>
+                  <div className="bg-surface-container-highest/50 p-6 rounded-3xl border border-outline-variant/5">
+                    <div className="flex items-center gap-2 mb-2">
+                      <ArrowUp className="w-4 h-4 text-secondary" />
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Upload</span>
+                    </div>
+                    <p className="font-headline text-3xl font-bold text-secondary">{formatValue(selectedTest.upload)} <span className="text-sm opacity-60">{unit}</span></p>
+                  </div>
+                </div>
+
+                {/* Network Stats */}
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="text-center p-4 bg-surface-container/30 rounded-2xl">
+                    <p className="text-[9px] font-bold uppercase text-on-surface-variant mb-1">Ping</p>
+                    <p className="font-headline font-bold text-lg">{selectedTest.ping} ms</p>
+                  </div>
+                  <div className="text-center p-4 bg-surface-container/30 rounded-2xl">
+                    <p className="text-[9px] font-bold uppercase text-on-surface-variant mb-1">Jitter</p>
+                    <p className="font-headline font-bold text-lg">{selectedTest.jitter} ms</p>
+                  </div>
+                  <div className="text-center p-4 bg-surface-container/30 rounded-2xl">
+                    <p className="text-[9px] font-bold uppercase text-on-surface-variant mb-1">Loss</p>
+                    <p className="font-headline font-bold text-lg">0.0%</p>
+                  </div>
+                </div>
+
+                {/* Connection Details */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-4 bg-surface-container-highest/30 rounded-2xl border border-outline-variant/5">
+                    <div className="flex items-center gap-3">
+                      <ShieldCheck className="w-4 h-4 text-primary" />
+                      <span className="text-xs font-bold text-on-surface-variant uppercase">ISP</span>
+                    </div>
+                    <span className="text-sm font-bold text-on-surface">{selectedTest.provider}</span>
+                  </div>
+                  <div className="flex items-center justify-between p-4 bg-surface-container-highest/30 rounded-2xl border border-outline-variant/5">
+                    <div className="flex items-center gap-3">
+                      <Activity className="w-4 h-4 text-primary" />
+                      <span className="text-xs font-bold text-on-surface-variant uppercase">IP Address</span>
+                    </div>
+                    <span className="text-sm font-bold text-on-surface">{selectedTest.ip}</span>
+                  </div>
+                  <div className="flex items-center justify-between p-4 bg-surface-container-highest/30 rounded-2xl border border-outline-variant/5">
+                    <div className="flex items-center gap-3">
+                      <MapPin className="w-4 h-4 text-primary" />
+                      <span className="text-xs font-bold text-on-surface-variant uppercase">Server</span>
+                    </div>
+                    <span className="text-sm font-bold text-on-surface">Berlin, DE</span>
+                  </div>
+                </div>
+
+                <button 
+                  onClick={() => setSelectedTest(null)}
+                  className="w-full py-5 rounded-3xl bg-primary text-on-primary font-headline font-bold text-lg shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                >
+                  Close Details
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </main>
   );
 }

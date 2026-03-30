@@ -118,7 +118,7 @@ export default function Firewall() {
   const blockedCount = globalBlock ? apps.length : apps.filter(app => !app.mobileData && !app.wifi).length;
 
   return (
-    <main className="pt-32 pb-32 px-6 max-w-2xl mx-auto w-full">
+    <main className="pt-32 px-6 max-w-2xl mx-auto w-full relative">
       {/* Global Block Control */}
       <motion.section 
         initial={{ opacity: 0, y: 20 }}

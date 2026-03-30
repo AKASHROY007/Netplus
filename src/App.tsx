@@ -19,6 +19,7 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from './lib/utils';
 import Dashboard from './components/Dashboard';
+import Analytics from './components/Analytics';
 import Firewall from './components/Firewall';
 import SettingsPage from './components/Settings';
 import MonitoringPage from './components/Monitoring';
@@ -74,29 +75,34 @@ const NavItem = ({ active, icon: Icon, label, onClick }: { active?: boolean, ico
   <button 
     onClick={onClick}
     className={cn(
-      "flex flex-col items-center justify-center py-2 px-5 transition-all duration-300 relative",
+      "flex flex-col items-center justify-center transition-all duration-300 relative h-16 w-full max-w-[80px] rounded-2xl overflow-hidden group",
       active ? "text-primary" : "text-on-surface-variant hover:text-on-surface"
     )}
   >
+    <div className="relative z-10 flex flex-col items-center justify-center gap-1">
+      <Icon className={cn("w-6 h-6 transition-transform group-active:scale-90", active && "fill-current")} />
+      <span className="font-label text-[10px] font-bold uppercase tracking-widest whitespace-nowrap">{label}</span>
+    </div>
     {active && (
       <motion.div 
         layoutId="active-nav"
-        className="absolute inset-0 bg-primary/10 rounded-2xl -z-10"
-        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        className="absolute inset-x-1 inset-y-1 bg-primary/10 rounded-xl z-0"
+        transition={{ type: "spring", stiffness: 400, damping: 35 }}
       />
     )}
-    <Icon className={cn("w-6 h-6 mb-1", active && "fill-current")} />
-    <span className="font-label text-[10px] font-semibold uppercase tracking-widest">{label}</span>
   </button>
 );
 
 export default function App() {
-  const [currentPage, setCurrentPage] = useState<'dashboard' | 'analytics' | 'firewall' | 'monitoring' | 'settings'>('firewall');
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState<'dashboard' | 'analytics' | 'firewall' | 'monitoring' | 'settings'>('dashboard');
   const [profileImage, setProfileImage] = useState<string>(() => {
     return localStorage.getItem('netpulse-profile-image') || "https://picsum.photos/seed/netpulse-user/200/200";
   });
+
+  // Scroll to top on page change
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [currentPage]);
 
   // Theme initialization
   React.useEffect(() => {
@@ -124,8 +130,9 @@ export default function App() {
   const renderPage = () => {
     switch (currentPage) {
       case 'dashboard':
-      case 'analytics':
         return <Dashboard />;
+      case 'analytics':
+        return <Analytics />;
       case 'firewall':
         return <Firewall />;
       case 'monitoring':
@@ -147,28 +154,22 @@ export default function App() {
       <StatusBar />
 
       {/* TopAppBar */}
-      <header className="fixed top-8 w-full z-50 flex items-center justify-between px-6 py-4 bg-gradient-to-b from-surface-container-low/80 to-transparent backdrop-blur-sm">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20">
-            <Gauge className="w-6 h-6 text-primary" />
-          </div>
-          <h1 className="font-headline tracking-tight font-bold text-2xl text-primary">NetPulse</h1>
-        </div>
+      <header className="fixed top-8 w-full z-50 flex items-center justify-between px-8 py-4 bg-gradient-to-b from-surface-container-low/80 to-transparent backdrop-blur-sm">
         <div className="flex items-center gap-4">
-          <button 
-            onClick={() => setIsSearchOpen(true)}
-            className="p-2.5 rounded-full bg-surface-container-highest/50 hover:bg-surface-container-highest transition-colors border border-outline-variant/10"
-          >
-            <Search className="w-5 h-5 text-on-surface-variant" />
-          </button>
+          <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20 shadow-lg shadow-primary/5">
+            <Gauge className="w-7 h-7 text-primary" />
+          </div>
+          <h1 className="font-headline tracking-tighter font-black text-3xl text-primary">NetPulse</h1>
+        </div>
+        <div className="flex items-center gap-6">
           <button 
             onClick={() => setCurrentPage('settings')}
             className={cn(
-              "p-2.5 rounded-full transition-all border border-outline-variant/10",
+              "p-3 rounded-2xl transition-all border border-outline-variant/10 shadow-sm",
               currentPage === 'settings' ? "bg-primary text-on-primary" : "bg-surface-container-highest/50 hover:bg-surface-container-highest text-on-surface-variant"
             )}
           >
-            <Settings className="w-5 h-5" />
+            <Settings className="w-6 h-6" />
           </button>
           <label className="relative cursor-pointer group">
             <input 
@@ -177,7 +178,7 @@ export default function App() {
               className="hidden" 
               onChange={handleImageUpload}
             />
-            <div className="w-10 h-10 rounded-full bg-surface-container-highest border border-outline-variant/20 flex items-center justify-center overflow-hidden ring-2 ring-primary/20 group-hover:ring-primary/50 transition-all">
+            <div className="w-12 h-12 rounded-2xl bg-surface-container-highest border border-outline-variant/20 flex items-center justify-center overflow-hidden ring-2 ring-primary/20 group-hover:ring-primary/50 transition-all shadow-md">
               <img 
                 className="w-full h-full object-cover" 
                 alt="User profile" 
@@ -185,83 +186,17 @@ export default function App() {
                 referrerPolicy="no-referrer"
               />
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                <RefreshCw className="w-4 h-4 text-white" />
+                <RefreshCw className="w-5 h-5 text-white" />
               </div>
             </div>
           </label>
         </div>
       </header>
 
-      {/* Search Overlay */}
-      <AnimatePresence>
-        {isSearchOpen && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[200] bg-background/80 backdrop-blur-xl flex flex-col items-center pt-32 px-6"
-          >
-            <div className="w-full max-w-2xl relative">
-              <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-6 h-6 text-primary" />
-              <input 
-                autoFocus
-                className="w-full bg-surface-container-highest border-none rounded-[2rem] py-6 pl-16 pr-16 text-xl font-headline font-bold text-on-surface placeholder:text-on-surface-variant/30 focus:ring-2 focus:ring-primary/50 transition-all shadow-2xl" 
-                placeholder="Search NetPulse..." 
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              <button 
-                onClick={() => setIsSearchOpen(false)}
-                className="absolute right-6 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-surface-container transition-colors"
-              >
-                <X className="w-6 h-6 text-on-surface-variant" />
-              </button>
-            </div>
-
-            <div className="mt-12 w-full max-w-2xl space-y-6">
-              {searchQuery ? (
-                <div className="space-y-4">
-                  <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant/50 ml-4">Quick Actions</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {[
-                      { label: 'Check Firewall', page: 'firewall', icon: Shield },
-                      { label: 'View Monitoring', page: 'monitoring', icon: Activity },
-                      { label: 'System Settings', page: 'settings', icon: Settings }
-                    ].filter(a => a.label.toLowerCase().includes(searchQuery.toLowerCase()))
-                     .map((action) => (
-                      <button 
-                        key={action.page}
-                        onClick={() => {
-                          setCurrentPage(action.page as any);
-                          setIsSearchOpen(false);
-                          setSearchQuery('');
-                        }}
-                        className="flex items-center gap-4 p-4 rounded-2xl bg-surface-container-low hover:bg-surface-container-highest border border-outline-variant/10 transition-all group"
-                      >
-                        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-                          <action.icon className="w-5 h-5" />
-                        </div>
-                        <span className="font-headline font-bold text-on-surface">{action.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center py-20">
-                  <p className="text-on-surface-variant font-headline font-bold text-lg">Type to search across NetPulse</p>
-                  <p className="text-on-surface-variant/50 text-sm mt-2">Search for apps, connections, or settings</p>
-                </div>
-              )}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       {renderPage()}
 
       {/* BottomNavBar */}
-      <nav className="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-8 pt-4 bg-surface-container-low/90 backdrop-blur-xl rounded-t-[3rem] border-t border-outline-variant/10 shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
+      <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-48px)] max-w-md z-50 flex justify-around items-center h-20 px-4 bg-surface-container-low/90 backdrop-blur-2xl rounded-[2.5rem] border border-outline-variant/10 shadow-2xl overflow-hidden">
         <NavItem 
           active={currentPage === 'dashboard'} 
           icon={LayoutDashboard} 
@@ -285,12 +220,6 @@ export default function App() {
           icon={Activity} 
           label="Monitoring" 
           onClick={() => setCurrentPage('monitoring')}
-        />
-        <NavItem 
-          active={currentPage === 'settings'} 
-          icon={Settings} 
-          label="Settings" 
-          onClick={() => setCurrentPage('settings')}
         />
       </nav>
     </div>
