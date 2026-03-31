@@ -100,22 +100,22 @@ export default function Monitoring() {
   };
 
   return (
-    <main className="pt-32 px-6 max-w-4xl mx-auto space-y-8 relative">
+    <main className="pt-40 px-6 pb-6 max-w-4xl mx-auto space-y-8 relative flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between">
         <motion.div 
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          className="space-y-1"
+          className="space-y-0.5"
         >
-          <h2 className="font-headline text-4xl font-bold tracking-tight text-primary">Live Monitoring</h2>
-          <p className="font-body text-on-surface-variant text-sm">Real-time network traffic and connection analysis.</p>
+          <h2 className="font-headline text-3xl font-bold tracking-tight text-primary">Live Monitoring</h2>
+          <p className="font-body text-on-surface-variant text-xs">Real-time network traffic and connection analysis.</p>
         </motion.div>
         <button 
           onClick={handleRefresh}
-          className="p-3 rounded-2xl bg-surface-container-highest hover:bg-primary/10 hover:text-primary transition-all group"
+          className="p-2.5 rounded-xl bg-surface-container-highest hover:bg-primary/10 hover:text-primary transition-all group"
         >
-          <RefreshCw className={cn("w-6 h-6", isRefreshing && "animate-spin")} />
+          <RefreshCw className={cn("w-5 h-5", isRefreshing && "animate-spin")} />
         </button>
       </div>
 
@@ -125,27 +125,27 @@ export default function Monitoring() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="bg-surface-container-low p-6 rounded-[2rem] border border-outline-variant/10 flex flex-col justify-between h-40"
+          className="bg-surface-container-low p-3 rounded-2xl border border-outline-variant/10"
         >
-          <div className="flex items-center justify-between">
-            <div className="w-10 h-10 rounded-xl bg-secondary/10 flex items-center justify-center text-secondary">
-              <ArrowDown className="w-5 h-5" />
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-secondary/10 flex items-center justify-center text-secondary shrink-0">
+              <ArrowDown className="w-4 h-4" />
             </div>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Download</span>
-          </div>
-          <div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-headline font-bold text-primary">
-                {data[data.length - 1].download}
-              </span>
-              <span className="text-sm font-body font-bold text-on-surface-variant">Mbps</span>
-            </div>
-            <div className="w-full h-1 bg-surface-container-highest rounded-full mt-2 overflow-hidden">
-              <motion.div 
-                className="h-full bg-secondary"
-                initial={{ width: "0%" }}
-                animate={{ width: `${(data[data.length - 1].download / 100) * 100}%` }}
-              />
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-[9px] font-bold uppercase tracking-widest text-on-surface-variant">Download</span>
+                <div className="flex items-baseline gap-0.5">
+                  <span className="text-lg font-headline font-bold text-primary">{data[data.length - 1].download}</span>
+                  <span className="text-[9px] font-bold text-on-surface-variant">Mbps</span>
+                </div>
+              </div>
+              <div className="w-full h-1 bg-surface-container-highest rounded-full overflow-hidden">
+                <motion.div 
+                  className="h-full bg-secondary"
+                  initial={{ width: "0%" }}
+                  animate={{ width: `${(data[data.length - 1].download / 100) * 100}%` }}
+                />
+              </div>
             </div>
           </div>
         </motion.div>
@@ -154,27 +154,27 @@ export default function Monitoring() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="bg-surface-container-low p-6 rounded-[2rem] border border-outline-variant/10 flex flex-col justify-between h-40"
+          className="bg-surface-container-low p-3 rounded-2xl border border-outline-variant/10"
         >
-          <div className="flex items-center justify-between">
-            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-              <ArrowUp className="w-5 h-5" />
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
+              <ArrowUp className="w-4 h-4" />
             </div>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Upload</span>
-          </div>
-          <div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-headline font-bold text-primary">
-                {data[data.length - 1].upload}
-              </span>
-              <span className="text-sm font-body font-bold text-on-surface-variant">Mbps</span>
-            </div>
-            <div className="w-full h-1 bg-surface-container-highest rounded-full mt-2 overflow-hidden">
-              <motion.div 
-                className="h-full bg-primary"
-                initial={{ width: "0%" }}
-                animate={{ width: `${(data[data.length - 1].upload / 100) * 100}%` }}
-              />
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-[9px] font-bold uppercase tracking-widest text-on-surface-variant">Upload</span>
+                <div className="flex items-baseline gap-0.5">
+                  <span className="text-lg font-headline font-bold text-primary">{data[data.length - 1].upload}</span>
+                  <span className="text-[9px] font-bold text-on-surface-variant">Mbps</span>
+                </div>
+              </div>
+              <div className="w-full h-1 bg-surface-container-highest rounded-full overflow-hidden">
+                <motion.div 
+                  className="h-full bg-primary"
+                  initial={{ width: "0%" }}
+                  animate={{ width: `${(data[data.length - 1].upload / 100) * 100}%` }}
+                />
+              </div>
             </div>
           </div>
         </motion.div>
@@ -183,22 +183,22 @@ export default function Monitoring() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="bg-surface-container-low p-6 rounded-[2rem] border border-outline-variant/10 flex flex-col justify-between h-40"
+          className="bg-surface-container-low p-3 rounded-2xl border border-outline-variant/10"
         >
-          <div className="flex items-center justify-between">
-            <div className="w-10 h-10 rounded-xl bg-tertiary/10 flex items-center justify-center text-tertiary">
-              <Zap className="w-5 h-5" />
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-tertiary/10 flex items-center justify-center text-tertiary shrink-0">
+              <Zap className="w-4 h-4" />
             </div>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Ping</span>
-          </div>
-          <div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-headline font-bold text-primary">
-                {data[data.length - 1].ping}
-              </span>
-              <span className="text-sm font-body font-bold text-on-surface-variant">ms</span>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between mb-0.5">
+                <span className="text-[9px] font-bold uppercase tracking-widest text-on-surface-variant">Ping</span>
+                <div className="flex items-baseline gap-0.5">
+                  <span className="text-lg font-headline font-bold text-primary">{data[data.length - 1].ping}</span>
+                  <span className="text-[9px] font-bold text-on-surface-variant">ms</span>
+                </div>
+              </div>
+              <p className="text-[8px] text-secondary font-bold uppercase">Ultra Stable</p>
             </div>
-            <p className="text-[10px] text-secondary font-bold uppercase mt-2">Ultra Stable</p>
           </div>
         </motion.div>
 
@@ -206,22 +206,22 @@ export default function Monitoring() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.35 }}
-          className="bg-surface-container-low p-6 rounded-[2rem] border border-outline-variant/10 flex flex-col justify-between h-40"
+          className="bg-surface-container-low p-3 rounded-2xl border border-outline-variant/10"
         >
-          <div className="flex items-center justify-between">
-            <div className="w-10 h-10 rounded-xl bg-orange-400/10 flex items-center justify-center text-orange-400">
-              <Activity className="w-5 h-5" />
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-orange-400/10 flex items-center justify-center text-orange-400 shrink-0">
+              <Activity className="w-4 h-4" />
             </div>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Jitter</span>
-          </div>
-          <div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-headline font-bold text-primary">
-                {data[data.length - 1].jitter}
-              </span>
-              <span className="text-sm font-body font-bold text-on-surface-variant">ms</span>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between mb-0.5">
+                <span className="text-[9px] font-bold uppercase tracking-widest text-on-surface-variant">Jitter</span>
+                <div className="flex items-baseline gap-0.5">
+                  <span className="text-lg font-headline font-bold text-primary">{data[data.length - 1].jitter}</span>
+                  <span className="text-[9px] font-bold text-on-surface-variant">ms</span>
+                </div>
+              </div>
+              <p className="text-[8px] text-on-surface-variant/50 font-bold uppercase">Low Variance</p>
             </div>
-            <p className="text-[10px] text-on-surface-variant/50 font-bold uppercase mt-2">Low Variance</p>
           </div>
         </motion.div>
       </div>

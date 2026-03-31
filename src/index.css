@@ -61,16 +61,16 @@
 
 @layer base {
   .light {
-    --color-background: #f8fafc;
-    --color-on-background: #0f172a;
+    --color-background: #F0F7F9;
+    --color-on-background: #002A34;
     --color-surface: #ffffff;
-    --color-on-surface: #0f172a;
-    --color-surface-container: #f1f5f9;
+    --color-on-surface: #002A34;
+    --color-surface-container: #ffffff;
     --color-surface-container-low: #ffffff;
     --color-surface-container-lowest: #ffffff;
-    --color-surface-container-high: #e2e8f0;
-    --color-surface-container-highest: #cbd5e1;
-    --color-surface-variant: #f1f5f9;
+    --color-surface-container-high: #EBF3F5;
+    --color-surface-container-highest: #DDE9EC;
+    --color-surface-variant: #ffffff;
     --color-primary: #007c8f;
     --color-on-primary: #ffffff;
     --color-primary-dim: #005f6d;
@@ -78,9 +78,9 @@
     --color-on-secondary: #ffffff;
     --color-tertiary: #6366f1;
     --color-on-tertiary: #ffffff;
-    --color-outline: #94a3b8;
-    --color-outline-variant: #e2e8f0;
-    --color-on-surface-variant: #64748b;
+    --color-outline: #80B3C4;
+    --color-outline-variant: #B0D0D9;
+    --color-on-surface-variant: #497C8D;
     --color-error: #dc2626;
     --color-on-error: #ffffff;
   }
@@ -100,4 +100,78 @@ body {
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* Custom Slider Styles for Light Mode */
+.light .custom-slider {
+  accent-color: var(--color-primary);
+}
+
+.light .custom-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  background: var(--color-primary);
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px var(--color-primary), 0 2px 4px rgba(0,0,0,0.1);
+  cursor: pointer;
+  margin-top: -6px; /* Centers thumb on track */
+}
+
+.light .custom-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  background: var(--color-primary);
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px var(--color-primary), 0 2px 4px rgba(0,0,0,0.1);
+  cursor: pointer;
+}
+
+/* Recharts Brush Customization */
+.recharts-brush-slide {
+  fill: var(--color-primary) !important;
+  fill-opacity: 0.05 !important;
+}
+
+.recharts-brush-traveller rect {
+  fill: var(--color-primary) !important;
+  stroke: none !important;
+}
+
+.recharts-brush-texts {
+  font-size: 10px !important;
+  font-weight: 600 !important;
+  fill: var(--color-on-surface-variant) !important;
+}
+
+.recharts-brush rect:first-child {
+  fill: transparent !important;
+  stroke: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Remove unnecessary white border/outline on charts when clicked/focused */
+.recharts-wrapper, 
+.recharts-surface,
+.recharts-responsive-container,
+.recharts-wrapper *:focus,
+.recharts-wrapper *:active,
+.recharts-responsive-container *:focus,
+.recharts-responsive-container *:active,
+.recharts-wrapper:focus,
+.recharts-wrapper:active,
+.recharts-responsive-container:focus,
+.recharts-responsive-container:active,
+svg:focus,
+path:focus,
+rect:focus,
+circle:focus,
+.recharts-brush:focus,
+.recharts-brush *:focus {
+  outline: none !important;
+  box-shadow: none !important;
+  border: none !important;
+  -webkit-tap-highlight-color: transparent;
 }

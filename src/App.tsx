@@ -95,6 +95,7 @@ const NavItem = ({ active, icon: Icon, label, onClick }: { active?: boolean, ico
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<'dashboard' | 'analytics' | 'firewall' | 'monitoring' | 'settings'>('dashboard');
+  const [previousPage, setPreviousPage] = useState<'dashboard' | 'analytics' | 'firewall' | 'monitoring'>('dashboard');
   const [profileImage, setProfileImage] = useState<string>(() => {
     return localStorage.getItem('netpulse-profile-image') || "https://picsum.photos/seed/netpulse-user/200/200";
   });
@@ -150,26 +151,33 @@ export default function App() {
   };
 
   return (
-    <div className="bg-background text-on-background font-body min-h-screen pb-32 selection:bg-primary/30">
+    <div className="bg-background text-on-background font-body min-h-0 pb-24 selection:bg-primary/30 flex flex-col">
       <StatusBar />
 
       {/* TopAppBar */}
-      <header className="fixed top-8 w-full z-50 flex items-center justify-between px-8 py-4 bg-gradient-to-b from-surface-container-low/80 to-transparent backdrop-blur-sm">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20 shadow-lg shadow-primary/5">
-            <Gauge className="w-7 h-7 text-primary" />
+      <header className="fixed top-12 left-1/2 -translate-x-1/2 w-[calc(100%-40px)] max-w-5xl z-50 flex items-center justify-between px-6 py-3.5 bg-surface-container-low/40 backdrop-blur-md rounded-[2rem] border border-outline-variant/15 shadow-xl">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20 shadow-sm">
+            <Gauge className="w-6 h-6 text-primary" />
           </div>
-          <h1 className="font-headline tracking-tighter font-black text-3xl text-primary">NetPulse</h1>
+          <h1 className="font-headline tracking-tighter font-black text-xl text-primary">NetPulse</h1>
         </div>
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-3">
           <button 
-            onClick={() => setCurrentPage('settings')}
+            onClick={() => {
+              if (currentPage === 'settings') {
+                setCurrentPage(previousPage);
+              } else {
+                setPreviousPage(currentPage as any);
+                setCurrentPage('settings');
+              }
+            }}
             className={cn(
-              "p-3 rounded-2xl transition-all border border-outline-variant/10 shadow-sm",
-              currentPage === 'settings' ? "bg-primary text-on-primary" : "bg-surface-container-highest/50 hover:bg-surface-container-highest text-on-surface-variant"
+              "p-2.5 rounded-xl transition-all border border-outline-variant/15 shadow-sm",
+              currentPage === 'settings' ? "bg-primary text-on-primary" : "bg-surface-container-highest/30 hover:bg-surface-container-highest text-on-surface-variant"
             )}
           >
-            <Settings className="w-6 h-6" />
+            <Settings className="w-5 h-5" />
           </button>
           <label className="relative cursor-pointer group">
             <input 
@@ -178,7 +186,7 @@ export default function App() {
               className="hidden" 
               onChange={handleImageUpload}
             />
-            <div className="w-12 h-12 rounded-2xl bg-surface-container-highest border border-outline-variant/20 flex items-center justify-center overflow-hidden ring-2 ring-primary/20 group-hover:ring-primary/50 transition-all shadow-md">
+            <div className="w-10 h-10 rounded-xl bg-surface-container-highest/50 border border-outline-variant/20 flex items-center justify-center overflow-hidden ring-2 ring-primary/10 group-hover:ring-primary/40 transition-all shadow-md">
               <img 
                 className="w-full h-full object-cover" 
                 alt="User profile" 
@@ -186,7 +194,7 @@ export default function App() {
                 referrerPolicy="no-referrer"
               />
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                <RefreshCw className="w-5 h-5 text-white" />
+                <RefreshCw className="w-3.5 h-3.5 text-white" />
               </div>
             </div>
           </label>
@@ -195,8 +203,8 @@ export default function App() {
 
       {renderPage()}
 
-      {/* BottomNavBar */}
-      <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-48px)] max-w-md z-50 flex justify-around items-center h-20 px-4 bg-surface-container-low/90 backdrop-blur-2xl rounded-[2.5rem] border border-outline-variant/10 shadow-2xl overflow-hidden">
+      {/* Bottom NavBar */}
+      <nav className="fixed bottom-4 left-1/2 -translate-x-1/2 w-[calc(100%-48px)] max-w-md z-50 flex justify-around items-center h-16 px-4 bg-surface-container-low/40 backdrop-blur-md rounded-[2rem] border border-outline-variant/10 shadow-xl overflow-hidden">
         <NavItem 
           active={currentPage === 'dashboard'} 
           icon={LayoutDashboard} 

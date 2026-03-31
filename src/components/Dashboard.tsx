@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   TrendingUp, 
   ArrowDown, 
@@ -12,7 +12,8 @@ import {
   Clock,
   MapPin,
   Activity,
-  ShieldCheck
+  ShieldCheck,
+  Zap
 } from 'lucide-react';
 import { 
   AreaChart, 
@@ -28,6 +29,95 @@ import {
 } from 'recharts';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
+
+// --- Animated Network Icons ---
+
+const WifiAnimated = ({ active = true, strength = 0.8, className = "" }: { active?: boolean, strength?: number, className?: string }) => {
+  const bars = [0.2, 0.4, 0.7, 1.0];
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={cn("w-full h-full", className)}>
+      <path d="M12 20h.01" className={cn(!active && "opacity-20", active && "text-primary")} />
+      {bars.map((b, i) => (
+        <motion.path
+          key={i}
+          d={i === 0 ? "M8.5 16.5a5 5 0 0 1 7 0" : i === 1 ? "M5 13a10 10 0 0 1 14 0" : i === 2 ? "M2 9.5a15 15 0 0 1 20 0" : ""}
+          initial={false}
+          animate={{
+            opacity: !active ? 0.1 : (strength >= b ? 1 : 0.2),
+            scale: active ? [1, 1.05, 1] : 1,
+          }}
+          transition={{
+            duration: 2,
+            repeat: Infinity,
+            delay: i * 0.2,
+            ease: "easeInOut"
+          }}
+          className={active ? "text-primary" : "text-on-surface-variant/20"}
+        />
+      ))}
+    </svg>
+  );
+};
+
+const SignalAnimated = ({ active = true, strength = 0.6, className = "" }: { active?: boolean, strength?: number, className?: string }) => {
+  const bars = [0.2, 0.4, 0.6, 0.8, 1.0];
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={cn("w-full h-full", className)}>
+      {bars.map((b, i) => (
+        <motion.path
+          key={i}
+          d={`M${2 + i * 4} ${22 - (i + 1) * 4}v${(i + 1) * 4}`}
+          initial={false}
+          animate={{
+            opacity: !active ? 0.1 : (strength >= b ? 1 : 0.2),
+            height: active ? [ (i + 1) * 4, (i + 1) * 4 + 2, (i + 1) * 4 ] : (i + 1) * 4
+          }}
+          transition={{
+            duration: 1.5,
+            repeat: Infinity,
+            delay: i * 0.1,
+            ease: "easeInOut"
+          }}
+          className={active ? "text-secondary" : "text-on-surface-variant/20"}
+        />
+      ))}
+    </svg>
+  );
+};
+
+const FiberAnimated = ({ active = true, speed = 1.0, className = "" }: { active?: boolean, speed?: number, className?: string }) => {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={cn("w-full h-full", className)}>
+      <path d="M12 2v8" className={cn(!active && "opacity-20", active && "text-primary")} />
+      <path d="m16 12-4 4-4-4" className={cn(!active && "opacity-20", active && "text-primary")} />
+      <path d="M12 16v6" className={cn(!active && "opacity-20", active && "text-primary")} />
+      
+      {active && (
+        <>
+          <motion.circle
+            cx="12" cy="2" r="2"
+            animate={{ r: [2, 3, 2], opacity: [0.5, 1, 0.5] }}
+            transition={{ duration: 2 / speed, repeat: Infinity }}
+            className="fill-primary"
+          />
+          <motion.path
+            d="M12 2v20"
+            strokeDasharray="4 4"
+            animate={{ strokeDashoffset: [0, -20] }}
+            transition={{ duration: 3 / speed, repeat: Infinity, ease: "linear" }}
+            className="stroke-primary/40"
+          />
+          <motion.circle
+            cx="12" cy="22" r="2"
+            animate={{ r: [2, 3, 2], opacity: [0.5, 1, 0.5] }}
+            transition={{ duration: 2 / speed, repeat: Infinity, delay: 0.5 }}
+            className="fill-primary"
+          />
+        </>
+      )}
+    </svg>
+  );
+};
 
 const GAUGE_DATA = [
   { name: 'Used', value: 65 },
@@ -64,9 +154,9 @@ const DATA_SETS: Record<string, any[]> = {
 };
 
 const HISTORY_ITEMS = [
-  { id: 1, name: 'Starlink 12-B (Home_WiFi_5G)', time: 'Today, 10:42 AM • Berlin, DE', download: 342.1, upload: 42.5, ping: '18', jitter: '2', icon: Wifi, color: 'text-primary', ip: '192.168.1.1', provider: 'SpaceX Starlink', status: 'Connected' },
-  { id: 2, name: 'LTE Mobile 5G', time: 'Yesterday, 08:15 PM • Mobile Data', download: 89.4, upload: 12.8, ping: '42', jitter: '8', icon: Signal, color: 'text-secondary', ip: '10.0.0.1', provider: 'T-Mobile', status: 'Connected' },
-  { id: 3, name: 'Office Fiber 1', time: '2 days ago • Berlin, DE', download: 944.8, upload: 890.2, ping: '4', jitter: '1', icon: Network, color: 'text-primary', ip: '172.16.0.1', provider: 'Deutsche Telekom', status: 'Disconnected' },
+  { id: 1, type: 'wifi', name: 'Starlink', code: '12-B', subtitle: '(Home_WiFi_5G)', time: 'Today, 10:42 AM • Berlin, DE', download: 342.1, upload: 42.5, ping: '18', jitter: '2', strength: 0.9, color: 'text-primary', ip: '192.168.1.1', provider: 'SpaceX Starlink', status: 'Connected' },
+  { id: 2, type: 'signal', name: 'LTE Mobile', code: '5G', subtitle: 'Mobile Data', time: 'Yesterday, 08:15 PM • Mobile Data', download: 89.4, upload: 12.8, ping: '42', jitter: '8', strength: 0.6, color: 'text-secondary', ip: '10.0.0.1', provider: 'T-Mobile', status: 'Connected' },
+  { id: 3, type: 'fiber', name: 'Office Fiber', code: '1', subtitle: 'Berlin, DE', time: '2 days ago • Berlin, DE', download: 944.8, upload: 890.2, ping: '4', jitter: '1', strength: 1.0, color: 'text-primary', ip: '172.16.0.1', provider: 'Deutsche Telekom', status: 'Disconnected' },
 ];
 
 export default function Dashboard() {
@@ -124,7 +214,7 @@ export default function Dashboard() {
   ];
 
   return (
-    <main className="pt-32 px-6 max-w-5xl mx-auto relative">
+    <main className="pt-40 px-6 pb-6 max-w-5xl mx-auto relative flex flex-col">
       {/* Hero Section */}
       <section className="mb-12">
         <header className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
@@ -155,23 +245,23 @@ export default function Dashboard() {
         {/* Main Usage Bento Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Data Gauge Card */}
-          <div className="md:col-span-2 bg-surface-container-low rounded-[2.5rem] p-8 relative overflow-hidden border border-outline-variant/10 group">
-            <div className="relative z-10 flex flex-col md:flex-row items-center gap-8 h-full">
-              <div className="relative w-48 h-48 flex items-center justify-center">
+          <div className="md:col-span-2 bg-surface-container-low rounded-2xl p-4 relative overflow-hidden border border-outline-variant/10 shadow-sm dark:shadow-none group">
+            <div className="relative z-10 flex flex-col md:flex-row items-center gap-4 h-full">
+              <div className="relative w-32 h-32 flex items-center justify-center shrink-0">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
                       data={gaugeData}
                       cx="50%"
                       cy="50%"
-                      innerRadius={65}
-                      outerRadius={85}
+                      innerRadius={45}
+                      outerRadius={60}
                       startAngle={225}
                       endAngle={-45}
                       paddingAngle={0}
                       dataKey="value"
                       stroke="none"
-                      cornerRadius={10}
+                      cornerRadius={6}
                     >
                       {gaugeData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={GAUGE_COLORS[index % GAUGE_COLORS.length]} />
@@ -180,61 +270,93 @@ export default function Dashboard() {
                   </PieChart>
                 </ResponsiveContainer>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-3xl font-headline font-bold text-primary">{usedPercent}%</span>
-                  <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Used</span>
+                  <span className="text-xl font-headline font-bold text-primary">{usedPercent}%</span>
+                  <span className="text-[8px] font-bold text-on-surface-variant uppercase tracking-widest">Used</span>
                 </div>
               </div>
 
-              <div className="flex-1 flex flex-col justify-center text-center md:text-left">
-                <div className="flex justify-between items-start mb-6">
+              <div className="flex-1 flex flex-col justify-center text-center md:text-left min-w-0">
+                <div className="flex justify-between items-start mb-2">
                   <div>
-                    <h3 className="font-headline text-2xl font-bold">Total Usage</h3>
-                    <p className="text-on-surface-variant text-sm">Session: 14h 22m</p>
+                    <h3 className="font-headline text-lg font-bold truncate">Total Usage</h3>
+                    <p className="text-on-surface-variant text-[10px]">Session: 14h 22m</p>
                   </div>
-                  <div className="p-2 bg-secondary/10 rounded-lg">
-                    <TrendingUp className="w-5 h-5 text-secondary" />
+                  <div className="p-1 bg-secondary/10 rounded-lg shrink-0">
+                    <TrendingUp className="w-3.5 h-3.5 text-secondary" />
                   </div>
                 </div>
-                <div className="flex items-end gap-2 mb-6 justify-center md:justify-start">
-                  <span className="font-headline text-7xl font-extrabold tracking-tighter text-primary">{totalUsage}</span>
-                  <span className="font-headline text-2xl font-bold text-primary-dim pb-3">GB</span>
+                <div className="flex items-end gap-1.5 mb-2 justify-center md:justify-start">
+                  <span className="font-headline text-4xl font-extrabold tracking-tighter text-primary leading-none">{totalUsage}</span>
+                  <span className="font-headline text-lg font-bold text-primary-dim">GB</span>
                 </div>
-                <div className="flex items-center gap-3 text-xs font-bold text-on-surface-variant">
+                <div className="flex items-center gap-2 text-[9px] font-bold text-on-surface-variant">
                   <div className="flex items-center gap-1 text-secondary">
-                    <ArrowUp className="w-3 h-3" />
+                    <ArrowUp className="w-2.5 h-2.5" />
                     <span>12.4%</span>
                   </div>
-                  <span>vs. last period</span>
+                  <span className="opacity-60">vs. last period</span>
                 </div>
               </div>
             </div>
-            <div className="absolute -right-16 -top-16 w-64 h-64 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/10 transition-colors duration-500"></div>
           </div>
 
-          {/* Small Metric Cards */}
-          <div className="flex flex-col gap-6">
+          {/* Compact Metric Card */}
+          <div className="flex flex-col">
             <motion.div 
-              whileHover={{ y: -5 }}
-              className="flex-1 bg-surface-container-highest rounded-[2.5rem] p-7 flex flex-col justify-between border border-outline-variant/10"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="bg-surface-container-highest rounded-2xl p-4 border border-outline-variant/10 h-full flex flex-col justify-center gap-4"
             >
-              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
-                <ArrowDown className="w-5 h-5 text-primary" />
+              {/* Download Section */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                      <ArrowDown className="w-3.5 h-3.5 text-primary" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-on-surface-variant text-[7px] uppercase tracking-[0.2em] font-bold truncate">Download</p>
+                      <p className="font-headline text-base font-bold leading-none truncate">{totalDownload.toFixed(1)} <span className="text-[8px] font-medium opacity-60">GB</span></p>
+                    </div>
+                  </div>
+                  <div className="text-[8px] font-bold text-primary bg-primary/5 px-1 py-0.5 rounded border border-primary/10 shrink-0">
+                    {((totalDownload / (totalDownload + totalUpload)) * 100).toFixed(0)}%
+                  </div>
+                </div>
+                <div className="h-1 w-full bg-surface-container rounded-full overflow-hidden">
+                  <motion.div 
+                    initial={{ width: 0 }}
+                    animate={{ width: `${(totalDownload / (totalDownload + totalUpload)) * 100}%` }}
+                    transition={{ duration: 1, ease: "easeOut" }}
+                    className="h-full bg-primary"
+                  />
+                </div>
               </div>
-              <div>
-                <p className="text-on-surface-variant text-[10px] uppercase tracking-[0.2em] font-bold mb-1">Download</p>
-                <p className="font-headline text-3xl font-bold">{totalDownload.toFixed(1)} <span className="text-sm font-medium text-on-surface-variant">GB</span></p>
-              </div>
-            </motion.div>
-            <motion.div 
-              whileHover={{ y: -5 }}
-              className="flex-1 bg-surface-container-highest rounded-[2.5rem] p-7 flex flex-col justify-between border border-outline-variant/10"
-            >
-              <div className="w-10 h-10 rounded-xl bg-secondary/10 flex items-center justify-center mb-4">
-                <ArrowUp className="w-5 h-5 text-secondary" />
-              </div>
-              <div>
-                <p className="text-on-surface-variant text-[10px] uppercase tracking-[0.2em] font-bold mb-1">Upload</p>
-                <p className="font-headline text-3xl font-bold">{totalUpload.toFixed(1)} <span className="text-sm font-medium text-on-surface-variant">GB</span></p>
+
+              {/* Upload Section */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-lg bg-secondary/10 flex items-center justify-center shrink-0">
+                      <ArrowUp className="w-3.5 h-3.5 text-secondary" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-on-surface-variant text-[7px] uppercase tracking-[0.2em] font-bold truncate">Upload</p>
+                      <p className="font-headline text-base font-bold leading-none truncate">{totalUpload.toFixed(1)} <span className="text-[8px] font-medium opacity-60">GB</span></p>
+                    </div>
+                  </div>
+                  <div className="text-[8px] font-bold text-secondary bg-secondary/5 px-1 py-0.5 rounded border border-secondary/10 shrink-0">
+                    {((totalUpload / (totalDownload + totalUpload)) * 100).toFixed(0)}%
+                  </div>
+                </div>
+                <div className="h-1 w-full bg-surface-container rounded-full overflow-hidden">
+                  <motion.div 
+                    initial={{ width: 0 }}
+                    animate={{ width: `${(totalUpload / (totalDownload + totalUpload)) * 100}%` }}
+                    transition={{ duration: 1, ease: "easeOut" }}
+                    className="h-full bg-secondary"
+                  />
+                </div>
               </div>
             </motion.div>
           </div>
@@ -242,26 +364,26 @@ export default function Dashboard() {
       </section>
 
       {/* Usage Chart Section */}
-      <section className="mb-12">
-        <div className="bg-surface-container-low rounded-[2.5rem] p-8 border border-outline-variant/10 shadow-xl shadow-black/20">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
+      <section className="mb-8">
+        <div className="bg-surface-container-low rounded-[2rem] p-6 border border-outline-variant/10 shadow-xl dark:shadow-black/20">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
             <div>
-              <h3 className="font-headline text-xl font-bold mb-1">Performance Flow</h3>
-              <p className="text-xs text-on-surface-variant font-medium">Real-time network stability analysis</p>
+              <h3 className="font-headline text-lg font-bold mb-0.5">Performance Flow</h3>
+              <p className="text-[10px] text-on-surface-variant font-medium">Real-time network stability analysis</p>
             </div>
-            <div className="flex gap-6 p-3 bg-surface-container-highest/30 rounded-2xl border border-outline-variant/5">
+            <div className="flex gap-4 p-2 bg-surface-container-highest/30 rounded-xl border border-outline-variant/5">
               <div className="flex items-center gap-2">
-                <div className="w-2.5 h-2.5 rounded-full bg-primary shadow-[0_0_8px_rgba(129,236,255,0.5)]"></div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">Download</span>
+                <div className="w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_rgba(129,236,255,0.5)]"></div>
+                <span className="text-[9px] font-bold uppercase tracking-wider text-on-surface-variant">Download</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-2.5 h-2.5 rounded-full bg-secondary shadow-[0_0_8px_rgba(69,254,201,0.5)]"></div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">Upload</span>
+                <div className="w-2 h-2 rounded-full bg-secondary shadow-[0_0_8px_rgba(69,254,201,0.5)]"></div>
+                <span className="text-[9px] font-bold uppercase tracking-wider text-on-surface-variant">Upload</span>
               </div>
             </div>
           </div>
           
-          <div className="h-72 w-full">
+          <div className="h-56 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={performanceData}>
                 <defs>
@@ -320,14 +442,14 @@ export default function Dashboard() {
       </section>
 
       {/* Speed Test History */}
-      <section className="mb-24">
-        <div className="flex items-center justify-between mb-8">
-          <h3 className="font-headline text-2xl font-bold tracking-tight">Recent Tests</h3>
-          <button className="px-4 py-2 rounded-xl bg-surface-container-highest/50 text-primary text-xs font-bold flex items-center gap-2 hover:bg-primary hover:text-on-primary transition-all border border-outline-variant/10">
-            Export Logs <Share className="w-3.5 h-3.5" />
+      <section className="mb-6">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="font-headline text-xl font-bold tracking-tight">Recent Tests</h3>
+          <button className="px-3 py-1.5 rounded-xl bg-surface-container-highest/50 text-primary text-[10px] font-bold flex items-center gap-2 hover:bg-primary hover:text-on-primary transition-all border border-outline-variant/10">
+            Export Logs <Share className="w-3 h-3" />
           </button>
         </div>
-        <div className="space-y-4">
+        <div className="space-y-3">
           {HISTORY_ITEMS.map((item, idx) => (
             <motion.div 
               key={item.id} 
@@ -339,17 +461,24 @@ export default function Dashboard() {
             >
               <div className="flex items-center gap-5">
                 <div className="relative">
-                  <div className={cn("w-14 h-14 rounded-2xl bg-surface-container-highest flex items-center justify-center border border-outline-variant/10 group-hover:border-primary/30 transition-colors", item.color)}>
-                    <item.icon className="w-7 h-7" />
+                  <div className={cn("w-14 h-14 rounded-2xl bg-surface-container-highest flex items-center justify-center border border-outline-variant/10 group-hover:border-primary/30 transition-colors p-3")}>
+                    {item.type === 'wifi' && <WifiAnimated active={item.status === 'Connected'} strength={item.strength} />}
+                    {item.type === 'signal' && <SignalAnimated active={item.status === 'Connected'} strength={item.strength} />}
+                    {item.type === 'fiber' && <FiberAnimated active={item.status === 'Connected'} speed={item.download / 500} />}
                   </div>
-                  {item.status === 'Connected' && (
-                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-background rounded-full flex items-center justify-center">
-                      <div className="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
-                    </div>
-                  )}
                 </div>
                 <div>
-                  <h4 className="font-bold text-on-surface text-lg leading-tight">{item.name}</h4>
+                  <h4 className="font-bold text-on-surface text-lg leading-tight">
+                    {item.name}
+                    {item.code && (
+                      <span className="text-xs font-medium text-on-surface-variant/60 ml-1.5">
+                        ({item.code})
+                      </span>
+                    )}
+                    <span className="text-[11px] font-medium text-on-surface-variant ml-1.5 opacity-70">
+                      {item.subtitle}
+                    </span>
+                  </h4>
                   <div className="flex items-center gap-2 mt-1">
                     <p className="text-[10px] text-on-surface-variant font-medium">{item.time}</p>
                     <div className="w-1 h-1 rounded-full bg-outline-variant/30 sm:hidden" />
@@ -395,11 +524,23 @@ export default function Dashboard() {
               {/* Modal Header */}
               <div className="p-8 pb-0 flex justify-between items-start">
                 <div className="flex items-center gap-4">
-                  <div className={cn("w-14 h-14 rounded-2xl bg-surface-container-highest flex items-center justify-center border border-outline-variant/10", selectedTest.color)}>
-                    <selectedTest.icon className="w-8 h-8" />
+                  <div className={cn("w-14 h-14 rounded-2xl bg-surface-container-highest flex items-center justify-center border border-outline-variant/10 p-3")}>
+                    {selectedTest.type === 'wifi' && <WifiAnimated active={selectedTest.status === 'Connected'} strength={selectedTest.strength} />}
+                    {selectedTest.type === 'signal' && <SignalAnimated active={selectedTest.status === 'Connected'} strength={selectedTest.strength} />}
+                    {selectedTest.type === 'fiber' && <FiberAnimated active={selectedTest.status === 'Connected'} speed={selectedTest.download / 500} />}
                   </div>
                   <div>
-                    <h3 className="font-headline text-2xl font-bold text-on-surface">{selectedTest.name}</h3>
+                    <h3 className="font-headline text-2xl font-bold text-on-surface flex items-baseline">
+                      {selectedTest.name}
+                      {selectedTest.code && (
+                        <span className="text-sm font-medium text-on-surface-variant/60 ml-1.5">
+                          ({selectedTest.code})
+                        </span>
+                      )}
+                      <span className="text-sm font-medium text-on-surface-variant ml-2 opacity-60">
+                        {selectedTest.subtitle}
+                      </span>
+                    </h3>
                     <div className="flex items-center gap-2 text-on-surface-variant text-xs font-medium">
                       <Clock className="w-3.5 h-3.5" />
                       <span>{selectedTest.time}</span>

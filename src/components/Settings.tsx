@@ -8,7 +8,8 @@ import {
   Bell,
   Moon,
   Sun,
-  RefreshCw
+  RefreshCw,
+  AlertTriangle
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { cn } from '../lib/utils';
@@ -89,37 +90,37 @@ export default function Settings() {
   };
 
   return (
-    <main className="pt-32 px-6 max-w-2xl mx-auto space-y-10 relative">
+    <main className="pt-32 px-6 max-w-2xl mx-auto space-y-10 relative min-h-[calc(100vh-80px)] flex flex-col">
       {/* Page Title */}
       <motion.section 
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="space-y-1"
+        className="space-y-0.5"
       >
-        <h2 className="font-headline text-4xl font-bold tracking-tight text-primary">Settings</h2>
-        <p className="font-body text-on-surface-variant text-sm">Configure your connection preferences and monitoring tools.</p>
+        <h2 className="font-headline text-3xl font-bold tracking-tight text-primary">Settings</h2>
+        <p className="font-body text-on-surface-variant text-xs">Configure your connection preferences and monitoring tools.</p>
       </motion.section>
 
       {/* Preference Grid: Unit Selection */}
-      <section className="space-y-4">
-        <h3 className="font-headline text-lg font-semibold uppercase tracking-widest text-secondary/80 ml-1">Data preferences</h3>
-        <div className="bg-surface-container-low rounded-[1.5rem] overflow-hidden border border-outline-variant/10">
-          <div className="p-6 flex items-center justify-between hover:bg-surface-container-highest transition-all duration-300 group">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-surface-container-highest flex items-center justify-center text-primary">
-                <Ruler className="w-6 h-6" />
+      <section className="space-y-2">
+        <h3 className="font-headline text-[10px] font-bold uppercase tracking-[0.2em] text-secondary/60 ml-1">Data preferences</h3>
+        <div className="bg-surface-container-low rounded-2xl overflow-hidden border border-outline-variant/10 shadow-sm dark:shadow-none">
+          <div className="p-3 flex items-center justify-between hover:bg-surface-container-highest transition-all duration-300 group">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-surface-container-highest flex items-center justify-center text-primary/60 dark:text-primary shrink-0">
+                <Ruler className="w-4 h-4" />
               </div>
               <div>
-                <p className="font-headline font-bold text-lg leading-tight">Unit Measurement</p>
-                <p className="font-body text-sm text-on-surface-variant">Choose your preferred bit rate display</p>
+                <p className="font-headline font-bold text-sm leading-tight text-on-surface">Unit Measurement</p>
+                <p className="font-body text-[10px] text-on-surface-variant">Choose bit rate display</p>
               </div>
             </div>
-            <div className="flex bg-surface-container p-1 rounded-full border border-outline-variant/10">
+            <div className="flex bg-surface-container p-0.5 rounded-full border border-outline-variant/10 shrink-0">
               <button 
                 onClick={() => handleUnitChange('Mbps')}
                 className={cn(
-                  "px-5 py-2 rounded-full font-headline font-bold text-xs transition-all",
-                  unit === 'Mbps' ? "bg-primary text-on-primary shadow-lg" : "text-on-surface-variant hover:text-primary"
+                  "px-3 py-1 rounded-full font-headline font-bold text-[9px] transition-all",
+                  unit === 'Mbps' ? "bg-primary text-on-primary shadow-md" : "text-on-surface-variant hover:text-primary bg-surface-container-highest/30 dark:bg-transparent"
                 )}
               >
                 Mbps
@@ -127,8 +128,8 @@ export default function Settings() {
               <button 
                 onClick={() => handleUnitChange('MB/s')}
                 className={cn(
-                  "px-5 py-2 rounded-full font-headline font-bold text-xs transition-all",
-                  unit === 'MB/s' ? "bg-primary text-on-primary shadow-lg" : "text-on-surface-variant hover:text-primary"
+                  "px-3 py-1 rounded-full font-headline font-bold text-[9px] transition-all",
+                  unit === 'MB/s' ? "bg-primary text-on-primary shadow-md" : "text-on-surface-variant hover:text-primary bg-surface-container-highest/30 dark:bg-transparent"
                 )}
               >
                 MB/s
@@ -136,22 +137,22 @@ export default function Settings() {
             </div>
           </div>
 
-          <div className="p-6 flex items-center justify-between hover:bg-surface-container-highest transition-all duration-300 border-t border-outline-variant/10">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-surface-container-highest flex items-center justify-center text-primary">
-                <Activity className="w-6 h-6" />
+          <div className="p-3 flex items-center justify-between hover:bg-surface-container-highest transition-all duration-300 border-t border-outline-variant/10">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-surface-container-highest flex items-center justify-center text-primary/60 dark:text-primary shrink-0">
+                <Activity className="w-4 h-4" />
               </div>
               <div>
-                <p className="font-headline font-bold text-lg leading-tight">Background Monitoring</p>
-                <p className="font-body text-sm text-on-surface-variant">
+                <p className="font-headline font-bold text-sm leading-tight text-on-surface">Background Monitoring</p>
+                <p className="font-body text-[10px] text-on-surface-variant">
                   {isChecking ? (
-                    <span className="text-primary flex items-center gap-2">
-                      <RefreshCw className="w-3 h-3 animate-spin" /> Checking speed...
+                    <span className="text-primary flex items-center gap-1.5">
+                      <RefreshCw className="w-2 h-2 animate-spin" /> Checking...
                     </span>
                   ) : lastCheck ? (
-                    `Last check: ${lastCheck}`
+                    `Last: ${lastCheck}`
                   ) : (
-                    "Periodic speed checks in the background"
+                    "Periodic speed checks"
                   )}
                 </p>
               </div>
@@ -159,76 +160,78 @@ export default function Settings() {
             <button 
               onClick={() => setBgMonitoring(!bgMonitoring)}
               className={cn(
-                "w-12 h-6 rounded-full relative transition-colors duration-300",
-                bgMonitoring ? "bg-secondary" : "bg-surface-container-highest"
+                "w-8 h-4 rounded-full relative transition-all duration-300 flex items-center shrink-0",
+                bgMonitoring ? "bg-primary shadow-[0_0_8px_rgba(129,236,255,0.3)]" : "bg-on-surface-variant/20"
               )}
             >
-              <div className={cn(
-                "w-5 h-5 rounded-full bg-white absolute top-0.5 transition-all duration-300",
-                bgMonitoring ? "left-6" : "left-1"
-              )} />
+              <motion.div 
+                animate={{ x: bgMonitoring ? 18 : 2 }}
+                className="w-3 h-3 rounded-full bg-white shadow-sm"
+                transition={{ type: "spring", stiffness: 500, damping: 30 }}
+              />
             </button>
           </div>
 
-          <div className="p-6 flex items-center justify-between hover:bg-surface-container-highest transition-all duration-300 border-t border-outline-variant/10">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-surface-container-highest flex items-center justify-center text-primary">
-                <Zap className="w-6 h-6" />
+          <div className="p-3 flex items-center justify-between hover:bg-surface-container-highest transition-all duration-300 border-t border-outline-variant/10">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-surface-container-highest flex items-center justify-center text-primary/60 dark:text-primary shrink-0">
+                <Zap className="w-4 h-4" />
               </div>
               <div>
-                <p className="font-headline font-bold text-lg leading-tight">Data Saver</p>
-                <p className="font-body text-sm text-on-surface-variant">Reduce data usage by limiting background activity.</p>
+                <p className="font-headline font-bold text-sm leading-tight text-on-surface">Data Saver</p>
+                <p className="font-body text-[10px] text-on-surface-variant">Limit background activity</p>
               </div>
             </div>
             <button 
               onClick={() => setDataSaver(!dataSaver)}
               className={cn(
-                "w-12 h-6 rounded-full relative transition-colors duration-300",
-                dataSaver ? "bg-secondary" : "bg-surface-container-highest"
+                "w-8 h-4 rounded-full relative transition-all duration-300 flex items-center shrink-0",
+                dataSaver ? "bg-primary shadow-[0_0_8px_rgba(129,236,255,0.3)]" : "bg-on-surface-variant/20"
               )}
             >
-              <div className={cn(
-                "w-5 h-5 rounded-full bg-white absolute top-0.5 transition-all duration-300",
-                dataSaver ? "left-6" : "left-1"
-              )} />
+              <motion.div 
+                animate={{ x: dataSaver ? 18 : 2 }}
+                className="w-3 h-3 rounded-full bg-white shadow-sm"
+                transition={{ type: "spring", stiffness: 500, damping: 30 }}
+              />
             </button>
           </div>
         </div>
       </section>
 
       {/* Alerts & Constraints */}
-      <section className="space-y-4">
-        <h3 className="font-headline text-lg font-semibold uppercase tracking-widest text-secondary/80 ml-1">Thresholds & Alerts</h3>
+      <section className="space-y-2">
+        <h3 className="font-headline text-[10px] font-bold uppercase tracking-[0.2em] text-secondary/60 ml-1">Thresholds & Alerts</h3>
         <div className={cn(
-          "bg-surface-container-low rounded-[1.5rem] p-6 space-y-6 border transition-all duration-500",
-          showAlert ? "border-error shadow-[0_0_20px_rgba(220,38,38,0.2)]" : "border-outline-variant/10"
+          "bg-surface-container-low rounded-2xl p-3.5 space-y-3 border transition-all duration-500 shadow-sm dark:shadow-none",
+          showAlert ? "border-error shadow-[0_0_15px_rgba(220,38,38,0.2)]" : "border-outline-variant/10"
         )}>
-          <div className="flex items-start justify-between">
-            <div className="flex items-center gap-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
               <div className={cn(
-                "w-12 h-12 rounded-xl flex items-center justify-center transition-colors",
-                showAlert ? "bg-error text-on-error animate-pulse" : "bg-surface-container-highest text-error"
+                "w-8 h-8 rounded-lg flex items-center justify-center transition-colors shrink-0",
+                showAlert ? "bg-error text-on-error animate-pulse" : "bg-surface-container-highest text-error/60 dark:text-error"
               )}>
-                <Bell className="w-6 h-6" />
+                <Bell className="w-4 h-4" />
               </div>
-              <div className="space-y-1">
-                <p className="font-headline font-bold text-lg leading-tight">Data Limit Alert</p>
+              <div className="min-w-0">
+                <p className="font-headline font-bold text-sm leading-tight text-on-surface">Data Limit Alert</p>
                 <p className={cn(
-                  "font-body text-sm transition-colors",
+                  "font-body text-[10px] transition-colors truncate",
                   showAlert ? "text-error font-bold" : "text-on-surface-variant"
                 )}>
-                  {showAlert ? "CRITICAL: Data limit exceeded!" : "Notify when monthly usage exceeds limit"}
+                  {showAlert ? "CRITICAL: Exceeded!" : "Notify on usage limit"}
                 </p>
               </div>
             </div>
-            <div className="text-right">
-              <span className={cn("font-headline text-2xl font-bold transition-colors", showAlert ? "text-error" : "text-primary")}>{limitDisplay.value}</span>
-              <span className="font-body text-xs font-bold text-on-surface-variant uppercase ml-1">{limitDisplay.unit}</span>
+            <div className="text-right shrink-0">
+              <span className={cn("font-headline text-lg font-bold transition-colors", showAlert ? "text-error" : "text-primary")}>{limitDisplay.value}</span>
+              <span className="font-body text-[9px] font-bold text-on-surface-variant uppercase ml-0.5">{limitDisplay.unit}</span>
             </div>
           </div>
-          <div className="relative pt-2">
+          <div className="relative pt-1">
             <input 
-              className="w-full h-2 bg-surface-container-highest rounded-full appearance-none cursor-pointer accent-primary" 
+              className="w-full h-1.5 bg-surface-container-highest rounded-full appearance-none cursor-pointer accent-primary custom-slider" 
               max={10000 * 1024} 
               min="10" 
               step="10"
@@ -236,7 +239,7 @@ export default function Settings() {
               value={dataLimit}
               onChange={(e) => handleDataLimitChange(parseInt(e.target.value))}
             />
-            <div className="flex justify-between mt-2 font-body text-[10px] font-bold text-on-surface-variant/50 tracking-tighter uppercase">
+            <div className="flex justify-between mt-1.5 font-body text-[8px] font-bold text-on-surface-variant/40 tracking-tighter uppercase">
               <span>10 MB</span>
               <span>10000 GB</span>
             </div>
@@ -245,10 +248,10 @@ export default function Settings() {
             <motion.div 
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
-              className="p-4 bg-error/10 rounded-xl border border-error/20 flex items-center gap-3"
+              className="p-2 bg-error/10 rounded-lg border border-error/20 flex items-center gap-2"
             >
-              <div className="w-2 h-2 rounded-full bg-error animate-ping" />
-              <p className="text-xs text-error font-bold">Current usage (512.4 GB) exceeds your {limitDisplay.value} {limitDisplay.unit} threshold.</p>
+              <AlertTriangle className="w-3 h-3 text-error shrink-0" />
+              <p className="text-[9px] text-error font-bold uppercase leading-none">Exceeded limit</p>
             </motion.div>
           )}
         </div>
@@ -256,39 +259,39 @@ export default function Settings() {
 
       <section className="space-y-4">
         <h3 className="font-headline text-lg font-semibold uppercase tracking-widest text-secondary/80 ml-1">Appearance</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-3">
           <button 
             onClick={() => handleThemeChange('dark')}
             className={cn(
-              "group relative overflow-hidden rounded-[1.5rem] bg-surface-container-low p-6 text-left hover:bg-surface-container-highest transition-all duration-300 border",
+              "group relative overflow-hidden rounded-2xl bg-surface-container-low p-4 text-left hover:bg-surface-container-highest transition-all duration-300 border shadow-sm dark:shadow-none",
               theme === 'dark' ? "border-secondary" : "border-outline-variant/10"
             )}
           >
-            <div className="flex items-center justify-between mb-8">
-              <div className="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-secondary">
-                <Moon className="w-5 h-5 fill-current" />
+            <div className="flex items-center justify-between mb-3">
+              <div className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-secondary">
+                <Moon className="w-4 h-4 fill-current" />
               </div>
-              {theme === 'dark' && <CheckCircle className="w-6 h-6 text-secondary" />}
+              {theme === 'dark' && <CheckCircle className="w-5 h-5 text-secondary" />}
             </div>
-            <p className="font-headline font-bold text-lg">NetPulse Dark</p>
-            <p className="font-body text-xs text-on-surface-variant">Deep nocturnal teal theme</p>
+            <p className="font-headline font-bold text-sm leading-tight">Dark Mode</p>
+            <p className="font-body text-[10px] text-on-surface-variant mt-0.5">Nocturnal theme</p>
           </button>
           
           <button 
             onClick={() => handleThemeChange('light')}
             className={cn(
-              "group relative overflow-hidden rounded-[1.5rem] bg-surface-container-low p-6 text-left hover:bg-surface-container-highest transition-all duration-300 border",
+              "group relative overflow-hidden rounded-2xl bg-surface-container-low p-4 text-left hover:bg-surface-container-highest transition-all duration-300 border shadow-sm dark:shadow-none",
               theme === 'light' ? "border-secondary" : "border-outline-variant/10"
             )}
           >
-            <div className="flex items-center justify-between mb-8">
-              <div className="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-on-surface-variant">
-                <Sun className="w-5 h-5" />
+            <div className="flex items-center justify-between mb-3">
+              <div className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-on-surface-variant">
+                <Sun className="w-4 h-4" />
               </div>
-              {theme === 'light' && <CheckCircle className="w-6 h-6 text-secondary" />}
+              {theme === 'light' && <CheckCircle className="w-5 h-5 text-secondary" />}
             </div>
-            <p className="font-headline font-bold text-lg text-on-surface-variant">Kinetic Light</p>
-            <p className="font-body text-xs text-on-surface-variant/60">High-contrast editorial light mode</p>
+            <p className="font-headline font-bold text-sm leading-tight text-on-surface-variant">Light Mode</p>
+            <p className="font-body text-[10px] text-on-surface-variant/60 mt-0.5">High-contrast</p>
           </button>
         </div>
       </section>

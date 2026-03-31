@@ -26,6 +26,7 @@ const INITIAL_APP_LIST = [
     category: 'Web Browser', 
     icon: Globe, 
     color: 'text-primary',
+    boxColor: 'bg-on-primary-container',
     mobileData: true,
     wifi: true 
   },
@@ -35,6 +36,7 @@ const INITIAL_APP_LIST = [
     category: 'Entertainment', 
     icon: Tv, 
     color: 'text-error',
+    boxColor: 'bg-error-container',
     mobileData: false,
     wifi: true 
   },
@@ -44,6 +46,7 @@ const INITIAL_APP_LIST = [
     category: 'Music', 
     icon: Music, 
     color: 'text-secondary',
+    boxColor: 'bg-secondary-container',
     mobileData: true,
     wifi: true 
   },
@@ -53,6 +56,7 @@ const INITIAL_APP_LIST = [
     category: 'System • Restricted', 
     icon: Smartphone, 
     color: 'text-on-surface-variant',
+    boxColor: 'bg-surface-container-highest',
     mobileData: true,
     wifi: true,
     isSystem: true
@@ -63,6 +67,7 @@ const INITIAL_APP_LIST = [
     category: 'System • Core', 
     icon: Shield, 
     color: 'text-primary',
+    boxColor: 'bg-on-primary-container',
     mobileData: true,
     wifi: true,
     isSystem: true
@@ -73,6 +78,7 @@ const INITIAL_APP_LIST = [
     category: 'System • Utility', 
     icon: Wifi, 
     color: 'text-secondary',
+    boxColor: 'bg-secondary-container',
     mobileData: true,
     wifi: true,
     isSystem: true
@@ -83,6 +89,7 @@ const INITIAL_APP_LIST = [
     category: 'Social', 
     icon: MessageSquare, 
     color: 'text-tertiary',
+    boxColor: 'bg-on-tertiary-fixed-variant',
     mobileData: false,
     wifi: false 
   },
@@ -108,47 +115,47 @@ export default function Firewall() {
   };
 
   const getStatusInfo = (mobileData: boolean, wifi: boolean) => {
-    if (globalBlock) return { label: 'Globally Blocked', color: 'text-error', icon: Shield, bg: 'bg-error/10', glow: 'shadow-[0_0_20px_rgba(255,113,108,0.3)]' };
-    if (mobileData && wifi) return { label: 'Allowed', color: 'text-secondary', icon: CheckCircle2, bg: 'bg-secondary/10', glow: 'shadow-[0_0_15px_rgba(69,254,201,0.15)]' };
-    if (!mobileData && !wifi) return { label: 'Blocked', color: 'text-error', icon: XCircle, bg: 'bg-error/10', glow: 'shadow-[0_0_15px_rgba(255,113,108,0.15)]' };
-    if (wifi) return { label: 'Wi-Fi Only', color: 'text-primary', icon: Wifi, bg: 'bg-primary/10', glow: 'shadow-[0_0_15px_rgba(129,236,255,0.15)]' };
-    return { label: 'Mobile Only', color: 'text-orange-400', icon: Signal, bg: 'bg-orange-400/10', glow: 'shadow-[0_0_15px_rgba(251,146,60,0.15)]' };
+    if (globalBlock) return { label: 'Globally Blocked', color: 'text-error', icon: Shield, bg: 'bg-on-error', glow: '' };
+    if (mobileData && wifi) return { label: 'Allowed', color: 'text-secondary', icon: CheckCircle2, bg: 'bg-on-secondary', glow: '' };
+    if (!mobileData && !wifi) return { label: 'Blocked', color: 'text-error', icon: XCircle, bg: 'bg-on-error', glow: '' };
+    if (wifi) return { label: 'Wi-Fi Only', color: 'text-primary', icon: Wifi, bg: 'bg-on-primary', glow: '' };
+    return { label: 'Mobile Only', color: 'text-orange-400', icon: Signal, bg: 'bg-orange-950', glow: '' };
   };
 
   const blockedCount = globalBlock ? apps.length : apps.filter(app => !app.mobileData && !app.wifi).length;
 
   return (
-    <main className="pt-32 px-6 max-w-2xl mx-auto w-full relative">
+    <main className="pt-40 px-6 pb-6 max-w-2xl mx-auto w-full relative flex flex-col">
       {/* Global Block Control */}
       <motion.section 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mb-10 p-6 rounded-[2rem] bg-surface-container-low relative overflow-hidden group border border-outline-variant/10"
+        className="mb-8 p-5 rounded-[1.5rem] bg-surface-container-low relative overflow-hidden group border border-outline-variant/10"
       >
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-50"></div>
         <div className="relative z-10 flex justify-between items-center">
           <div className="flex flex-col">
-            <span className="font-headline text-lg font-bold tracking-tight text-primary">Global Security</span>
-            <span className="text-on-surface-variant text-sm font-medium">Block all background traffic</span>
+            <span className="font-headline text-base font-bold tracking-tight text-primary">Global Security</span>
+            <span className="text-on-surface-variant text-xs font-medium">Block all background traffic</span>
           </div>
           <button 
             onClick={() => setGlobalBlock(!globalBlock)}
-            className="w-14 h-8 rounded-full bg-surface-container-highest relative p-1 transition-all duration-300"
+            className="w-12 h-7 rounded-full bg-surface-container-highest relative p-1 transition-all duration-300"
           >
             <div className={cn(
-              "w-6 h-6 rounded-full bg-primary-fixed shadow-[0_0_12px_rgba(129,236,255,0.4)] transition-transform duration-300",
-              globalBlock ? "translate-x-6" : "translate-x-0"
+              "w-5 h-5 rounded-full bg-primary-fixed shadow-[0_0_12px_rgba(129,236,255,0.4)] transition-transform duration-300",
+              globalBlock ? "translate-x-5" : "translate-x-0"
             )}></div>
           </button>
         </div>
       </motion.section>
 
       {/* Search & Filter Controls */}
-      <div className="flex gap-3 mb-8 relative">
+      <div className="flex gap-2 mb-6 relative">
         <div className="flex-1 relative group">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-on-surface-variant group-focus-within:text-primary transition-colors" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-on-surface-variant group-focus-within:text-primary transition-colors" />
           <input 
-            className="w-full bg-surface-container-highest border-none rounded-2xl py-4 pl-12 pr-4 text-on-surface placeholder:text-on-surface-variant/50 focus:ring-2 focus:ring-primary/30 transition-all font-medium" 
+            className="w-full bg-surface-container-highest border-none rounded-xl py-3 pl-10 pr-4 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:ring-2 focus:ring-primary/30 transition-all font-medium" 
             placeholder="Search apps..." 
             type="text"
             value={searchQuery}
@@ -158,11 +165,11 @@ export default function Firewall() {
         <button 
           onClick={() => setIsFilterOpen(!isFilterOpen)}
           className={cn(
-            "bg-surface-container-highest w-14 rounded-2xl flex items-center justify-center border transition-all active:scale-95",
+            "bg-surface-container-highest w-12 rounded-xl flex items-center justify-center border transition-all active:scale-95",
             selectedCategory !== 'All' ? "text-primary border-primary/30" : "text-primary-fixed border-primary/5"
           )}
         >
-          <Filter className="w-5 h-5" />
+          <Filter className="w-4 h-4" />
         </button>
 
         {/* Category Filter Menu */}
@@ -201,8 +208,8 @@ export default function Firewall() {
       {/* Section Header */}
       <div className="flex justify-between items-end mb-6">
         <div>
-          <h2 className="font-headline text-2xl font-bold tracking-tight text-on-surface">Application Control</h2>
-          <p className="text-on-surface-variant text-sm">Managing {apps.length} installed applications</p>
+          <h2 className="font-headline text-xl font-bold tracking-tight text-on-surface">Application Control</h2>
+          <p className="text-on-surface-variant text-xs">Managing {apps.length} installed applications</p>
         </div>
         <button 
           onClick={() => setShowSystem(!showSystem)}
@@ -236,37 +243,36 @@ export default function Firewall() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: idx * 0.05 }}
               className={cn(
-                "p-4 rounded-2xl transition-all duration-300 group border border-outline-variant/5",
-                status.glow,
+                "p-3 rounded-xl transition-all duration-300 group border border-outline-variant/10",
                 app.isSystem 
-                  ? "bg-surface-container-high/40 hover:bg-surface-container-high border-dashed" 
+                  ? "bg-surface-container-high border-dashed" 
                   : "bg-surface-container-high hover:bg-surface-container-highest"
               )}
             >
               <div className="flex items-center justify-between">
-                <div className={cn("flex items-center gap-4", app.isSystem && "opacity-70")}>
-                  <div className="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center p-2.5 relative">
-                    <app.icon className={cn("w-7 h-7", app.color)} />
+                <div className={cn("flex items-center gap-3", app.isSystem && "opacity-70")}>
+                  <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center p-2 relative", (app as any).boxColor || "bg-surface-container")}>
+                    <app.icon className={cn("w-5 h-5", app.color)} />
                     {/* Status Indicator Dot */}
                     <div className={cn(
-                      "absolute -top-1 -right-1 w-4 h-4 rounded-full border-2 border-surface-container-high flex items-center justify-center",
+                      "absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-surface-container-high flex items-center justify-center",
                       status.bg
                     )}>
-                      <status.icon className={cn("w-2 h-2", status.color)} />
+                      <status.icon className={cn("w-1.5 h-1.5", status.color)} />
                     </div>
                   </div>
                   <div className="flex flex-col">
                     <div className="flex items-center gap-2">
-                      <span className="font-headline font-semibold text-on-surface">{app.name}</span>
+                      <span className="font-headline font-semibold text-sm text-on-surface">{app.name}</span>
                     </div>
-                    <div className="flex items-center gap-2 mt-1">
+                    <div className="flex items-center gap-2 mt-0.5">
                       <div className={cn(
-                        "flex items-center gap-1.5 px-2 py-0.5 rounded-full border border-outline-variant/10",
+                        "flex items-center gap-1 px-1.5 py-0.5 rounded-full border border-outline-variant/10",
                         status.bg
                       )}>
-                        <status.icon className={cn("w-3 h-3", status.color)} />
+                        <status.icon className={cn("w-2.5 h-2.5", status.color)} />
                         <span className={cn(
-                          "text-[9px] font-bold uppercase tracking-tight",
+                          "text-[8px] font-bold uppercase tracking-tight",
                           status.color
                         )}>
                           {status.label}
