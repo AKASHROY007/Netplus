@@ -4,9 +4,6 @@ on: [push]
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      # এটি গিটহাবকে লেটেস্ট নোড ইঞ্জিন ব্যবহার করতে বাধ্য করবে
-      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -31,16 +28,20 @@ jobs:
 
       - name: Build Android APK
         run: |
-          # ডিপেন্ডেন্সি ইনস্টল এবং কনফিগারেশন
+          # ক্যাপাসিটর টুলস ইনস্টল
           npm install @capacitor/core @capacitor/cli @capacitor/android
-          npx cap init NetPulse com.akash.netpulse --web-dir dist || true
           
-          # অ্যান্ড্রয়েড প্ল্যাটফর্ম যোগ এবং সিঙ্ক
-          npx cap add android || true
+          # যদি আগে থেকে অ্যান্ড্রয়েড ফোল্ডার থাকে তবে তা মুছে ফেলা (পরিষ্কার বিল্ডের জন্য)
+          rm -rf android
+          
+          # ক্যাপাসিটর নতুন করে সেটআপ
+          npx cap init NetPulse com.akash.netpulse --web-dir dist || true
+          npx cap add android
           npx cap sync android
           
-          # গ্রেডেল বিল্ড রান করা
+          # গ্রেডেল র‍্যাপার ঠিক করা এবং বিল্ড রান করা
           cd android
+          ./gradlew clean
           chmod +x gradlew
           ./gradlew assembleDebug
 
