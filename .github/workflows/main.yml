@@ -4,6 +4,9 @@ on: [push]
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      # এটি গিটহাবকে লেটেস্ট নোড ইঞ্জিন ব্যবহার করতে বাধ্য করবে
+      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -14,7 +17,7 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
-      - name: Install Node.js 22
+      - name: Set up Node.js 22
         uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -24,14 +27,19 @@ jobs:
 
       - name: Build Web Project
         run: |
-          npm run build || mkdir -p dist && cp index.html dist/index.html || true
+          npm run build || (mkdir -p dist && cp index.html dist/index.html) || true
 
       - name: Build Android APK
         run: |
+          # ডিপেন্ডেন্সি ইনস্টল এবং কনফিগারেশন
           npm install @capacitor/core @capacitor/cli @capacitor/android
           npx cap init NetPulse com.akash.netpulse --web-dir dist || true
+          
+          # অ্যান্ড্রয়েড প্ল্যাটফর্ম যোগ এবং সিঙ্ক
           npx cap add android || true
           npx cap sync android
+          
+          # গ্রেডেল বিল্ড রান করা
           cd android
           chmod +x gradlew
           ./gradlew assembleDebug
