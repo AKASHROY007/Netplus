@@ -55,7 +55,9 @@ export default function Monitoring() {
     ram: 2.4,
     storage: 128.5,
     freeStorage: 0,
-    temp: 42
+    temp: 42,
+    battery: 100,
+    isCharging: false
   });
   const [activeConnections, setActiveConnections] = useState([
     { id: 1, host: 'google.com', type: 'HTTPS', status: 'Active', speed: 1.2, unit: 'MB/s', icon: Globe, ip: '142.250.190.46', port: '443', protocol: 'TLS 1.3' },
@@ -67,11 +69,14 @@ export default function Monitoring() {
   const fetchDeviceInfo = async () => {
     try {
       const info = await Device.getInfo() as any;
+      const batteryInfo = await Device.getBatteryInfo();
       setSystemStats(prev => ({
         ...prev,
         ram: parseFloat((info.memUsed / (1024 * 1024 * 1024)).toFixed(2)),
         storage: parseFloat((info.realDiskTotal / (1024 * 1024 * 1024)).toFixed(1)),
-        freeStorage: parseFloat((info.realDiskFree / (1024 * 1024 * 1024)).toFixed(1))
+        freeStorage: parseFloat((info.realDiskFree / (1024 * 1024 * 1024)).toFixed(1)),
+        battery: Math.round(batteryInfo.batteryLevel * 100),
+        isCharging: batteryInfo.isCharging || false
       }));
     } catch (error) {
       console.error('Error fetching device info:', error);
@@ -471,7 +476,7 @@ export default function Monitoring() {
       </section>
 
       {/* System Info */}
-      <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <section className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <div className="bg-surface-container-low p-6 rounded-[2rem] border border-outline-variant/10 flex items-center gap-4">
           <div className="w-10 h-10 rounded-xl bg-surface-container-highest flex items-center justify-center text-on-surface-variant">
             <Cpu className="w-5 h-5" />
@@ -498,6 +503,16 @@ export default function Monitoring() {
             <p className="text-[10px] font-bold text-on-surface-variant uppercase">Storage</p>
             <p className="font-headline font-bold text-lg">{systemStats.storage} GB</p>
             <p className="text-[8px] text-on-surface-variant/60 font-bold uppercase">{systemStats.freeStorage} GB Free</p>
+          </div>
+        </div>
+        <div className="bg-surface-container-low p-6 rounded-[2rem] border border-outline-variant/10 flex items-center gap-4">
+          <div className="w-10 h-10 rounded-xl bg-surface-container-highest flex items-center justify-center text-on-surface-variant">
+            <Zap className={cn("w-5 h-5", systemStats.isCharging && "text-primary animate-pulse")} />
+          </div>
+          <div>
+            <p className="text-[10px] font-bold text-on-surface-variant uppercase">Battery</p>
+            <p className="font-headline font-bold text-lg">{systemStats.battery}%</p>
+            <p className="text-[8px] text-on-surface-variant/60 font-bold uppercase">{systemStats.isCharging ? 'Charging' : 'Discharging'}</p>
           </div>
         </div>
         <div className="bg-surface-container-low p-6 rounded-[2rem] border border-outline-variant/10 flex items-center gap-4">
