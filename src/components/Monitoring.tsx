@@ -197,19 +197,30 @@ export default function Monitoring() {
   useEffect(() => {
     updateDeviceMonitoring();
     const deviceInterval = setInterval(updateDeviceMonitoring, 5000);
-      const interval = setInterval(() => {
+
+    const handleNetworkUpdate = (event: any) => {
+      let newData;
+      try {
+        // Capacitor event detail can be string or object
+        newData = typeof event.detail === 'string' ? JSON.parse(event.detail) : event.detail;
+      } catch (e) {
+        console.error("Failed to parse network update:", e);
+        return;
+      }
+
       setData(prev => {
-        const newData = [...prev.slice(1)];
-        newData.push({
+        const updatedData = [...prev.slice(1)];
+        updatedData.push({
           time: prev[prev.length - 1].time + 1,
-          download: Math.floor(Math.random() * 80) + 20,
-          upload: Math.floor(Math.random() * 30) + 5,
-          ping: Math.floor(Math.random() * 20) + 10,
-          jitter: Math.floor(Math.random() * 5) + 1,
+          download: newData.download,
+          upload: newData.upload,
+          ping: newData.ping,
+          jitter: newData.jitter,
         });
-        return newData;
+        return updatedData;
       });
 
+      // Keep other stats moving for visual feedback
       setSystemStats(prev => ({
         ...prev,
         cpu: Math.floor(Math.random() * 30) + 10,
@@ -222,10 +233,12 @@ export default function Monitoring() {
         const newSpeed = Math.max(0.1, conn.speed + change);
         return { ...conn, speed: parseFloat(newSpeed.toFixed(1)) };
       }));
-    }, 2000);
+    };
+
+    window.addEventListener('networkUpdate', handleNetworkUpdate as EventListener);
 
     return () => {
-      clearInterval(interval);
+      window.removeEventListener('networkUpdate', handleNetworkUpdate as EventListener);
       clearInterval(deviceInterval);
     };
   }, []);

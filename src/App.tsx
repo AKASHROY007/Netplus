@@ -30,17 +30,28 @@ const StatusBar = () => {
   const [speeds, setSpeeds] = useState({ up: 0, down: 0 });
 
   useEffect(() => {
-    const interval = setInterval(() => {
+    const handleNetworkUpdate = (event: any) => {
+      let newData;
+      try {
+        newData = typeof event.detail === 'string' ? JSON.parse(event.detail) : event.detail;
+      } catch (e) {
+        return;
+      }
+      
+      // Convert Mbps to KB/s for the formatSpeed function
+      // 1 Mbps = 125 KB/s
       setSpeeds({
-        up: Math.floor(Math.random() * 500) + 50,
-        down: Math.floor(Math.random() * 2000) + 200
+        down: Math.round(newData.download * 125),
+        up: Math.round(newData.upload * 125)
       });
-    }, 2000);
-    return () => clearInterval(interval);
+    };
+
+    window.addEventListener('networkUpdate', handleNetworkUpdate as EventListener);
+    return () => window.removeEventListener('networkUpdate', handleNetworkUpdate as EventListener);
   }, []);
 
   const formatSpeed = (kbps: number) => {
-    if (kbps > 1024) return `${(kbps / 1024).toFixed(1)} MB/s`;
+    if (kbps >= 1024) return `${(kbps / 1024).toFixed(1)} MB/s`;
     return `${kbps} KB/s`;
   };
 
