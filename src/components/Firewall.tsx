@@ -14,7 +14,8 @@ import {
   CheckCircle2,
   XCircle,
   WifiOff,
-  SignalLow
+  SignalLow,
+  Activity
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
@@ -103,7 +104,7 @@ export default function Firewall() {
   const [selectedCategory, setSelectedCategory] = useState<string | 'All'>('All');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-  const categories = ['All', ...new Set(INITIAL_APP_LIST.map(app => {
+  const categories = ['All', 'Active', 'Wi-Fi', ...new Set(INITIAL_APP_LIST.map(app => {
     if (app.category.includes(' • ')) return app.category.split(' • ')[0];
     return app.category;
   }))];
@@ -231,7 +232,10 @@ export default function Firewall() {
             const matchesSearch = app.name.toLowerCase().includes(query) || 
                                 app.category.toLowerCase().includes(query);
             const matchesSystem = showSystem ? true : !app.isSystem;
-            const matchesCategory = selectedCategory === 'All' || app.category.startsWith(selectedCategory);
+            const matchesCategory = selectedCategory === 'All' || 
+                                  (selectedCategory === 'Active' ? (app.mobileData || app.wifi) :
+                                   selectedCategory === 'Wi-Fi' ? app.wifi :
+                                   app.category.startsWith(selectedCategory));
             return matchesSearch && matchesSystem && matchesCategory;
           })
           .map((app, idx) => {
@@ -322,17 +326,17 @@ export default function Firewall() {
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="mt-12 p-6 rounded-[2.5rem] bg-gradient-to-br from-surface-variant to-surface border border-primary/10 shadow-2xl relative overflow-hidden"
+        className="mt-8 p-4 rounded-[1.5rem] bg-gradient-to-br from-surface-variant to-surface border border-primary/10 shadow-2xl relative overflow-hidden"
       >
-        <div className="absolute -right-10 -top-10 w-40 h-40 bg-primary/10 blur-[80px]"></div>
-        <div className="flex justify-between items-start">
+        <div className="absolute -right-10 -top-10 w-32 h-32 bg-primary/10 blur-[60px]"></div>
+        <div className="flex justify-between items-center">
           <div>
-            <h3 className="font-headline font-bold text-lg text-primary mb-1">Network Hygiene</h3>
-            <p className="text-sm text-on-surface-variant max-w-[200px]">{blockedCount} application{blockedCount !== 1 ? 's are' : ' is'} currently blocked from all network access.</p>
+            <h3 className="font-headline font-bold text-base text-primary mb-0.5">Network Hygiene</h3>
+            <p className="text-xs text-on-surface-variant max-w-[180px]">{blockedCount} application{blockedCount !== 1 ? 's are' : ' is'} currently blocked.</p>
           </div>
           <div className="text-right">
-            <div className="text-3xl font-headline font-black text-secondary tracking-tighter">1.2 GB</div>
-            <div className="text-[10px] uppercase tracking-widest font-bold text-on-surface-variant">Data Prevented</div>
+            <div className="text-2xl font-headline font-black text-secondary tracking-tighter">1.2 GB</div>
+            <div className="text-[9px] uppercase tracking-widest font-bold text-on-surface-variant">Data Prevented</div>
           </div>
         </div>
       </motion.div>

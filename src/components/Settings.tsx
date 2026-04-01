@@ -306,7 +306,7 @@ export default function Settings() {
 
       {/* Version Number */}
       <div className="text-center pb-12 pt-2">
-        <p className="font-body text-[10px] text-on-surface-variant/40 uppercase tracking-[0.2em]">Version 1.2.0 (Stable)</p>
+        <p className="font-body text-[10px] text-on-surface-variant/40 uppercase tracking-[0.2em]">Version 1.2.0 (Beta)</p>
       </div>
     </main>
   );
