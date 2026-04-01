@@ -297,12 +297,17 @@ export default function Settings() {
       </section>
 
       {/* Danger Zone */}
-      <section className="pb-10">
+      <section>
         <button className="w-full py-4 rounded-[1.5rem] bg-error/10 hover:bg-error/20 transition-colors flex items-center justify-center gap-3 group border border-error/20">
           <RefreshCw className="w-5 h-5 text-error group-hover:rotate-180 transition-transform duration-500" />
           <span className="font-headline font-bold text-error uppercase tracking-widest text-sm">Reset all configurations</span>
         </button>
       </section>
+
+      {/* Version Number */}
+      <div className="text-center pb-12 pt-2">
+        <p className="font-body text-[10px] text-on-surface-variant/40 uppercase tracking-[0.2em]">Version 1.2.0 (Stable)</p>
+      </div>
     </main>
   );
 }
