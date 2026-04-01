@@ -492,7 +492,7 @@ export default function Dashboard() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.1 }}
               onClick={() => setSelectedTest(item)}
-              className="bg-surface-container p-5 rounded-[1.5rem] flex items-center justify-between hover:bg-surface-container-highest transition-all group cursor-pointer border border-outline-variant/5 hover:border-primary/20"
+              className="bg-surface-container p-3.5 rounded-[1.5rem] flex items-center justify-between hover:bg-surface-container-highest transition-all group cursor-pointer border border-outline-variant/5 hover:border-primary/20"
             >
               <div className="flex items-center gap-5">
                 <div className="relative">
@@ -557,7 +557,7 @@ export default function Dashboard() {
               className="relative w-full max-w-lg bg-surface-container-low rounded-[2.5rem] border border-outline-variant/20 shadow-2xl overflow-hidden"
             >
               {/* Modal Header */}
-              <div className="p-8 pb-0 flex justify-between items-start">
+              <div className="p-6 pb-0 flex justify-between items-start">
                 <div className="flex items-center gap-4">
                   <div className={cn("w-14 h-14 rounded-2xl bg-surface-container-highest flex items-center justify-center border border-outline-variant/10 p-3")}>
                     {selectedTest.type === 'wifi' && <WifiAnimated active={selectedTest.status === 'Connected'} strength={selectedTest.strength} />}
@@ -582,26 +582,20 @@ export default function Dashboard() {
                     </div>
                   </div>
                 </div>
-                <button 
-                  onClick={() => setSelectedTest(null)}
-                  className="p-2 rounded-full hover:bg-surface-container-highest transition-colors"
-                >
-                  <X className="w-6 h-6 text-on-surface-variant" />
-                </button>
               </div>
 
               {/* Modal Content */}
-              <div className="p-8 space-y-8">
+              <div className="p-6 space-y-6">
                 {/* Speed Metrics */}
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-surface-container-highest/50 p-6 rounded-3xl border border-outline-variant/5">
+                  <div className="bg-surface-container-highest/50 p-4 rounded-3xl border border-outline-variant/5">
                     <div className="flex items-center gap-2 mb-2">
                       <ArrowDown className="w-4 h-4 text-primary" />
                       <span className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Download</span>
                     </div>
                     <p className="font-headline text-3xl font-bold text-primary">{formatValue(selectedTest.download)} <span className="text-sm opacity-60">{unit}</span></p>
                   </div>
-                  <div className="bg-surface-container-highest/50 p-6 rounded-3xl border border-outline-variant/5">
+                  <div className="bg-surface-container-highest/50 p-4 rounded-3xl border border-outline-variant/5">
                     <div className="flex items-center gap-2 mb-2">
                       <ArrowUp className="w-4 h-4 text-secondary" />
                       <span className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Upload</span>
@@ -612,15 +606,15 @@ export default function Dashboard() {
 
                 {/* Network Stats */}
                 <div className="grid grid-cols-3 gap-4">
-                  <div className="text-center p-4 bg-surface-container/30 rounded-2xl">
+                  <div className="text-center p-3 bg-surface-container/30 rounded-2xl">
                     <p className="text-[9px] font-bold uppercase text-on-surface-variant mb-1">Ping</p>
                     <p className="font-headline font-bold text-lg">{selectedTest.ping} ms</p>
                   </div>
-                  <div className="text-center p-4 bg-surface-container/30 rounded-2xl">
+                  <div className="text-center p-3 bg-surface-container/30 rounded-2xl">
                     <p className="text-[9px] font-bold uppercase text-on-surface-variant mb-1">Jitter</p>
                     <p className="font-headline font-bold text-lg">{selectedTest.jitter} ms</p>
                   </div>
-                  <div className="text-center p-4 bg-surface-container/30 rounded-2xl">
+                  <div className="text-center p-3 bg-surface-container/30 rounded-2xl">
                     <p className="text-[9px] font-bold uppercase text-on-surface-variant mb-1">Loss</p>
                     <p className="font-headline font-bold text-lg">0.0%</p>
                   </div>
@@ -628,21 +622,21 @@ export default function Dashboard() {
 
                 {/* Connection Details */}
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between p-4 bg-surface-container-highest/30 rounded-2xl border border-outline-variant/5">
+                  <div className="flex items-center justify-between p-3 bg-surface-container-highest/30 rounded-2xl border border-outline-variant/5">
                     <div className="flex items-center gap-3">
                       <ShieldCheck className="w-4 h-4 text-primary" />
                       <span className="text-xs font-bold text-on-surface-variant uppercase">ISP</span>
                     </div>
                     <span className="text-sm font-bold text-on-surface">{selectedTest.provider}</span>
                   </div>
-                  <div className="flex items-center justify-between p-4 bg-surface-container-highest/30 rounded-2xl border border-outline-variant/5">
+                  <div className="flex items-center justify-between p-3 bg-surface-container-highest/30 rounded-2xl border border-outline-variant/5">
                     <div className="flex items-center gap-3">
                       <Activity className="w-4 h-4 text-primary" />
                       <span className="text-xs font-bold text-on-surface-variant uppercase">IP Address</span>
                     </div>
                     <span className="text-sm font-bold text-on-surface">{selectedTest.ip}</span>
                   </div>
-                  <div className="flex items-center justify-between p-4 bg-surface-container-highest/30 rounded-2xl border border-outline-variant/5">
+                  <div className="flex items-center justify-between p-3 bg-surface-container-highest/30 rounded-2xl border border-outline-variant/5">
                     <div className="flex items-center gap-3">
                       <MapPin className="w-4 h-4 text-primary" />
                       <span className="text-xs font-bold text-on-surface-variant uppercase">Server</span>
@@ -653,7 +647,7 @@ export default function Dashboard() {
 
                 <button 
                   onClick={() => setSelectedTest(null)}
-                  className="w-full py-5 rounded-3xl bg-primary text-on-primary font-headline font-bold text-lg shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                  className="w-full py-3.5 rounded-3xl bg-primary text-on-primary font-headline font-bold text-lg shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
                 >
                   Close Details
                 </button>

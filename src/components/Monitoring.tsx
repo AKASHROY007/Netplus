@@ -51,12 +51,12 @@ export default function Monitoring() {
   const [filter, setFilter] = useState<'All' | 'Active' | 'Idle'>('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [systemStats, setSystemStats] = useState({ 
-    cpu: 14, 
-    ram: 2.4,
-    storage: 128.5,
+    cpu: 0, 
+    ram: 0,
+    storage: 0,
     freeStorage: 0,
-    temp: 42,
-    battery: 100,
+    temp: 0,
+    battery: 0,
     isCharging: false
   });
   const [activeConnections, setActiveConnections] = useState([
@@ -141,43 +141,52 @@ export default function Monitoring() {
 
   const updateDeviceMonitoring = async () => {
     try {
+      // Correct Capacitor plugin syntax for bridging with hardware
       const info = await Device.getInfo() as any;
       const batteryInfo = await Device.getBatteryInfo();
+      const deviceId = await Device.getId();
+
+      console.log("Hardware Sync:", { info, batteryInfo, deviceId });
 
       // 1. Update RAM (Calculated from real system data)
+      // memUsed gives bytes, converting to GB
+      const ramVal = info.memUsed ? (info.memUsed / (1024 * 1024 * 1024)).toFixed(1) : "0.0";
       if (document.getElementById('ram-val')) {
-        // memUsed gives bytes, converting to GB
-        const ramInGB = info.memUsed ? (info.memUsed / (1024 * 1024 * 1024)).toFixed(1) : "0.0";
-        document.getElementById('ram-val').innerText = ramInGB + " GB";
+        document.getElementById('ram-val').innerText = ramVal + " GB";
       }
 
-      // 2. Update Battery (This is already working for you)
+      // 2. Update Battery
+      const batteryVal = Math.round(batteryInfo.batteryLevel * 100);
       if (document.getElementById('battery-val')) {
-        document.getElementById('battery-val').innerText = Math.round(batteryInfo.batteryLevel * 100) + "%";
+        document.getElementById('battery-val').innerText = batteryVal + "%";
       }
 
-      // 3. Update Model Name instead of dummy text
+      // 3. Update Model Name (Real hardware model)
+      const modelVal = info.model || "Analyzing...";
       if (document.getElementById('cpu-val')) {
-        document.getElementById('cpu-val').innerText = info.model || "Unknown Device";
+        document.getElementById('cpu-val').innerText = modelVal;
       }
 
-      // 4. Update Storage Logic
+      // 4. Update Storage Logic (Total and Free)
+      const totalGB = info.realDiskTotal ? (info.realDiskTotal / (1024 * 1024 * 1024)).toFixed(1) : "0.0";
+      const freeGB = info.realDiskFree ? (info.realDiskFree / (1024 * 1024 * 1024)).toFixed(1) : "0.0";
+      
       if (document.getElementById('storage-val')) {
-        const totalGB = info.realDiskTotal ? (info.realDiskTotal / (1024 * 1024 * 1024)).toFixed(1) : "0.0";
-        const freeGB = info.realDiskFree ? (info.realDiskFree / (1024 * 1024 * 1024)).toFixed(1) : "0.0";
         document.getElementById('storage-val').innerText = totalGB + " GB";
-        
-        const freeEl = document.getElementById('storage-free-val');
-        if (freeEl) {
-          freeEl.innerText = freeGB + " GB Free";
-        }
+      }
+      
+      if (document.getElementById('storage-free-val')) {
+        document.getElementById('storage-free-val').innerText = freeGB + " GB Free";
       }
 
-      // Keep state updated for other UI elements (like charging status and temp)
+      // Sync React state to ensure UI consistency across re-renders
       setSystemStats(prev => ({
         ...prev,
+        ram: parseFloat(ramVal),
+        storage: parseFloat(totalGB),
+        freeStorage: parseFloat(freeGB),
+        battery: batteryVal,
         isCharging: batteryInfo.isCharging || false,
-        freeStorage: info.realDiskFree ? parseFloat((info.realDiskFree / (1024 * 1024 * 1024)).toFixed(1)) : 0
       }));
 
     } catch (err) {
@@ -227,7 +236,7 @@ export default function Monitoring() {
   };
 
   return (
-    <main className="pt-40 px-6 pb-6 max-w-4xl mx-auto space-y-8 relative flex flex-col">
+    <main className="pt-28 px-6 pb-6 max-w-4xl mx-auto space-y-6 relative flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between">
         <motion.div 
@@ -371,23 +380,23 @@ export default function Monitoring() {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.4 }}
-        className="bg-surface-container-low p-6 rounded-[2.5rem] border border-outline-variant/10 space-y-6"
+        className="bg-surface-container-low p-4 rounded-3xl border border-outline-variant/10 space-y-3"
       >
         <div className="flex items-center justify-between">
-          <h3 className="font-headline font-bold text-xl">Traffic Flow</h3>
-          <div className="flex gap-4">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-secondary" />
-              <span className="text-[10px] font-bold uppercase text-on-surface-variant">Download</span>
+          <h3 className="font-headline font-bold text-lg">Traffic Flow</h3>
+          <div className="flex gap-3">
+            <div className="flex items-center gap-1.5">
+              <div className="w-2 h-2 rounded-full bg-secondary" />
+              <span className="text-[9px] font-bold uppercase text-on-surface-variant">Download</span>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-primary" />
-              <span className="text-[10px] font-bold uppercase text-on-surface-variant">Upload</span>
+            <div className="flex items-center gap-1.5">
+              <div className="w-2 h-2 rounded-full bg-primary" />
+              <span className="text-[9px] font-bold uppercase text-on-surface-variant">Upload</span>
             </div>
           </div>
         </div>
 
-        <div className="h-64 w-full">
+        <div className="h-48 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={data}>
               <defs>
@@ -440,23 +449,23 @@ export default function Monitoring() {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.45 }}
-        className="bg-surface-container-low p-6 rounded-[2.5rem] border border-outline-variant/10 space-y-6"
+        className="bg-surface-container-low p-4 rounded-3xl border border-outline-variant/10 space-y-3"
       >
         <div className="flex items-center justify-between">
-          <h3 className="font-headline font-bold text-xl">Network Stability</h3>
-          <div className="flex gap-4">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-tertiary" />
-              <span className="text-[10px] font-bold uppercase text-on-surface-variant">Ping (ms)</span>
+          <h3 className="font-headline font-bold text-lg">Network Stability</h3>
+          <div className="flex gap-3">
+            <div className="flex items-center gap-1.5">
+              <div className="w-2 h-2 rounded-full bg-tertiary" />
+              <span className="text-[9px] font-bold uppercase text-on-surface-variant">Ping (ms)</span>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-orange-400" />
-              <span className="text-[10px] font-bold uppercase text-on-surface-variant">Jitter (ms)</span>
+            <div className="flex items-center gap-1.5">
+              <div className="w-2 h-2 rounded-full bg-orange-400" />
+              <span className="text-[9px] font-bold uppercase text-on-surface-variant">Jitter (ms)</span>
             </div>
           </div>
         </div>
 
-        <div className="h-48 w-full">
+        <div className="h-32 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={data}>
               <defs>
@@ -505,27 +514,27 @@ export default function Monitoring() {
       </motion.section>
 
       {/* Active Connections */}
-      <section className="space-y-4">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 ml-1">
-          <h3 className="font-headline text-lg font-semibold uppercase tracking-widest text-secondary/80">Active Connections</h3>
-          <div className="flex flex-col sm:flex-row gap-3">
+      <section className="space-y-3">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 ml-1">
+          <h3 className="font-headline text-base font-semibold uppercase tracking-widest text-secondary/80">Active Connections</h3>
+          <div className="flex flex-col sm:flex-row gap-2">
             <div className="relative group">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-on-surface-variant group-focus-within:text-primary transition-colors" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-on-surface-variant group-focus-within:text-primary transition-colors" />
               <input 
-                className="bg-surface-container-highest border-none rounded-xl py-2 pl-10 pr-4 text-xs font-bold text-on-surface placeholder:text-on-surface-variant/50 focus:ring-2 focus:ring-primary/30 transition-all w-full sm:w-48" 
+                className="bg-surface-container-highest border-none rounded-xl py-1.5 pl-9 pr-4 text-[10px] font-bold text-on-surface placeholder:text-on-surface-variant/50 focus:ring-2 focus:ring-primary/30 transition-all w-full sm:w-40" 
                 placeholder="Search host/IP..." 
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <div className="flex bg-surface-container-highest rounded-xl p-1">
+            <div className="flex bg-surface-container-highest rounded-xl p-0.5">
               {(['All', 'Active', 'Idle'] as const).map((f) => (
                 <button
                   key={f}
                   onClick={() => setFilter(f)}
                   className={cn(
-                    "px-3 py-1 rounded-lg text-[10px] font-bold uppercase transition-all",
+                    "px-2.5 py-1 rounded-lg text-[9px] font-bold uppercase transition-all",
                     filter === f ? "bg-primary text-on-primary shadow-lg" : "text-on-surface-variant hover:text-on-surface"
                   )}
                 >
@@ -535,7 +544,7 @@ export default function Monitoring() {
             </div>
           </div>
         </div>
-        <div className="space-y-3">
+        <div className="space-y-2">
           {activeConnections
             .filter(conn => {
               const matchesFilter = filter === 'All' || conn.status === filter;
@@ -551,18 +560,18 @@ export default function Monitoring() {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.5 + idx * 0.1 }}
-              className="bg-surface-container-low p-4 rounded-2xl border border-outline-variant/10 flex items-center justify-between hover:bg-surface-container-highest transition-all group cursor-pointer relative"
+              className="bg-surface-container-low p-3 rounded-xl border border-outline-variant/10 flex items-center justify-between hover:bg-surface-container-highest transition-all group cursor-pointer relative"
             >
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-surface-container-highest flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-                  <conn.icon className="w-6 h-6" />
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-surface-container-highest flex items-center justify-center text-primary group-hover:scale-105 transition-transform">
+                  <conn.icon className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="font-headline font-bold text-lg leading-tight">{conn.host}</p>
+                  <p className="font-headline font-bold text-base leading-tight">{conn.host}</p>
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold text-on-surface-variant uppercase bg-surface-container px-2 py-0.5 rounded-full">{conn.type}</span>
+                    <span className="text-[9px] font-bold text-on-surface-variant uppercase bg-surface-container px-1.5 py-0.5 rounded-full">{conn.type}</span>
                     <span className={cn(
-                      "text-[10px] font-bold uppercase",
+                      "text-[9px] font-bold uppercase",
                       conn.status === 'Active' ? "text-secondary" : "text-on-surface-variant/50"
                     )}>
                       {conn.status}
@@ -571,8 +580,8 @@ export default function Monitoring() {
                 </div>
               </div>
               <div className="text-right">
-                <p className="font-headline font-bold text-primary">{conn.speed} {conn.unit}</p>
-                <p className="text-[10px] font-bold text-on-surface-variant uppercase">Current Speed</p>
+                <p className="font-headline font-bold text-primary text-sm">{conn.speed} {conn.unit}</p>
+                <p className="text-[9px] font-bold text-on-surface-variant uppercase">Speed</p>
               </div>
 
               {/* Hover Details Tooltip */}
@@ -592,52 +601,52 @@ export default function Monitoring() {
       </section>
 
       {/* System Info */}
-      <section className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <div className="bg-surface-container-low p-6 rounded-[2rem] border border-outline-variant/10 flex items-center gap-4">
-          <div className="w-10 h-10 rounded-xl bg-surface-container-highest flex items-center justify-center text-on-surface-variant">
-            <Cpu className="w-5 h-5" />
+      <section className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <div className="bg-surface-container-low p-4 rounded-3xl border border-outline-variant/10 flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-surface-container-highest flex items-center justify-center text-on-surface-variant">
+            <Cpu className="w-4 h-4" />
           </div>
-          <div>
-            <p className="text-[10px] font-bold text-on-surface-variant uppercase">CPU</p>
-            <p id="cpu-val" className="font-headline font-bold text-lg truncate max-w-[100px]">{systemStats.cpu}%</p>
-          </div>
-        </div>
-        <div className="bg-surface-container-low p-6 rounded-[2rem] border border-outline-variant/10 flex items-center gap-4">
-          <div className="w-10 h-10 rounded-xl bg-surface-container-highest flex items-center justify-center text-on-surface-variant">
-            <Database className="w-5 h-5" />
-          </div>
-          <div>
-            <p className="text-[10px] font-bold text-on-surface-variant uppercase">RAM</p>
-            <p id="ram-val" className="font-headline font-bold text-lg">{systemStats.ram} GB</p>
+          <div className="min-w-0">
+            <p className="text-[9px] font-bold text-on-surface-variant uppercase">Model</p>
+            <p id="cpu-val" className="font-headline font-bold text-sm truncate">Analyzing...</p>
           </div>
         </div>
-        <div className="bg-surface-container-low p-6 rounded-[2rem] border border-outline-variant/10 flex items-center gap-4">
-          <div className="w-10 h-10 rounded-xl bg-surface-container-highest flex items-center justify-center text-on-surface-variant">
-            <HardDrive className="w-5 h-5" />
+        <div className="bg-surface-container-low p-4 rounded-3xl border border-outline-variant/10 flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-surface-container-highest flex items-center justify-center text-on-surface-variant">
+            <Database className="w-4 h-4" />
           </div>
           <div>
-            <p className="text-[10px] font-bold text-on-surface-variant uppercase">Storage</p>
-            <p id="storage-val" className="font-headline font-bold text-lg">{systemStats.storage} GB</p>
-            <p id="storage-free-val" className="text-[8px] text-on-surface-variant/60 font-bold uppercase">{systemStats.freeStorage} GB Free</p>
+            <p className="text-[9px] font-bold text-on-surface-variant uppercase">RAM</p>
+            <p id="ram-val" className="font-headline font-bold text-sm">0.0 GB</p>
           </div>
         </div>
-        <div className="bg-surface-container-low p-6 rounded-[2rem] border border-outline-variant/10 flex items-center gap-4">
-          <div className="w-10 h-10 rounded-xl bg-surface-container-highest flex items-center justify-center text-on-surface-variant">
-            <Zap className={cn("w-5 h-5", systemStats.isCharging && "text-primary animate-pulse")} />
+        <div className="bg-surface-container-low p-4 rounded-3xl border border-outline-variant/10 flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-surface-container-highest flex items-center justify-center text-on-surface-variant">
+            <HardDrive className="w-4 h-4" />
           </div>
           <div>
-            <p className="text-[10px] font-bold text-on-surface-variant uppercase">Battery</p>
-            <p id="battery-val" className="font-headline font-bold text-lg">{systemStats.battery}%</p>
-            <p className="text-[8px] text-on-surface-variant/60 font-bold uppercase">{systemStats.isCharging ? 'Charging' : 'Discharging'}</p>
+            <p className="text-[9px] font-bold text-on-surface-variant uppercase">Storage</p>
+            <p id="storage-val" className="font-headline font-bold text-sm">0.0 GB</p>
+            <p id="storage-free-val" className="text-[7px] text-on-surface-variant/60 font-bold uppercase">0.0 GB Free</p>
           </div>
         </div>
-        <div className="bg-surface-container-low p-6 rounded-[2rem] border border-outline-variant/10 flex items-center gap-4">
-          <div className="w-10 h-10 rounded-xl bg-surface-container-highest flex items-center justify-center text-on-surface-variant">
-            <Thermometer className="w-5 h-5" />
+        <div className="bg-surface-container-low p-4 rounded-3xl border border-outline-variant/10 flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-surface-container-highest flex items-center justify-center text-on-surface-variant">
+            <Zap className={cn("w-4 h-4", systemStats.isCharging && "text-primary animate-pulse")} />
           </div>
           <div>
-            <p className="text-[10px] font-bold text-on-surface-variant uppercase">Temp</p>
-            <p className="font-headline font-bold text-lg">{systemStats.temp}°C</p>
+            <p className="text-[9px] font-bold text-on-surface-variant uppercase">Battery</p>
+            <p id="battery-val" className="font-headline font-bold text-sm">0%</p>
+            <p className="text-[7px] text-on-surface-variant/60 font-bold uppercase">{systemStats.isCharging ? 'Charging' : 'Discharging'}</p>
+          </div>
+        </div>
+        <div className="bg-surface-container-low p-4 rounded-3xl border border-outline-variant/10 flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-surface-container-highest flex items-center justify-center text-on-surface-variant">
+            <Thermometer className="w-4 h-4" />
+          </div>
+          <div>
+            <p className="text-[9px] font-bold text-on-surface-variant uppercase">Temp</p>
+            <p className="font-headline font-bold text-sm">{systemStats.temp}°C</p>
           </div>
         </div>
       </section>
