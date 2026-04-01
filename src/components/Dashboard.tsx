@@ -213,6 +213,38 @@ export default function Dashboard() {
     { name: 'Remaining', value: 100 - usedPercent },
   ];
 
+  const handleExportLogs = () => {
+    const headers = ['ID', 'Type', 'Name', 'Code', 'Subtitle', 'Time', 'Download (Mbps)', 'Upload (Mbps)', 'Ping (ms)', 'Jitter (ms)', 'IP', 'Provider', 'Status'];
+    const csvContent = [
+      headers.join(','),
+      ...HISTORY_ITEMS.map(item => [
+        item.id,
+        item.type,
+        `"${item.name}"`,
+        `"${item.code}"`,
+        `"${item.subtitle}"`,
+        `"${item.time}"`,
+        item.download,
+        item.upload,
+        item.ping,
+        item.jitter,
+        item.ip,
+        `"${item.provider}"`,
+        item.status
+      ].join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `netpulse_logs_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <main className="pt-40 px-6 pb-6 max-w-5xl mx-auto relative flex flex-col">
       {/* Hero Section */}
@@ -445,7 +477,10 @@ export default function Dashboard() {
       <section className="mb-6">
         <div className="flex items-center justify-between mb-6">
           <h3 className="font-headline text-xl font-bold tracking-tight">Recent Tests</h3>
-          <button className="px-3 py-1.5 rounded-xl bg-surface-container-highest/50 text-primary text-[10px] font-bold flex items-center gap-2 hover:bg-primary hover:text-on-primary transition-all border border-outline-variant/10">
+          <button 
+            onClick={handleExportLogs}
+            className="px-3 py-1.5 rounded-xl bg-surface-container-highest/50 text-primary text-[10px] font-bold flex items-center gap-2 hover:bg-primary hover:text-on-primary transition-all border border-outline-variant/10"
+          >
             Export Logs <Share className="w-3 h-3" />
           </button>
         </div>

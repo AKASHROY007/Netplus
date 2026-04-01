@@ -15,6 +15,7 @@ import {
   Thermometer,
   HardDrive
 } from 'lucide-react';
+import { Device } from '@capacitor/device';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   AreaChart, 
@@ -53,6 +54,7 @@ export default function Monitoring() {
     cpu: 14, 
     ram: 2.4,
     storage: 128.5,
+    freeStorage: 0,
     temp: 42
   });
   const [activeConnections, setActiveConnections] = useState([
@@ -62,7 +64,22 @@ export default function Monitoring() {
     { id: 4, host: 'netflix.com', type: 'UDP', status: 'Active', speed: 8.4, unit: 'MB/s', icon: Activity, ip: '45.57.91.1', port: '443', protocol: 'QUIC' },
   ]);
 
+  const fetchDeviceInfo = async () => {
+    try {
+      const info = await Device.getInfo() as any;
+      setSystemStats(prev => ({
+        ...prev,
+        ram: parseFloat((info.memUsed / (1024 * 1024 * 1024)).toFixed(2)),
+        storage: parseFloat((info.realDiskTotal / (1024 * 1024 * 1024)).toFixed(1)),
+        freeStorage: parseFloat((info.realDiskFree / (1024 * 1024 * 1024)).toFixed(1))
+      }));
+    } catch (error) {
+      console.error('Error fetching device info:', error);
+    }
+  };
+
   useEffect(() => {
+    fetchDeviceInfo();
     const interval = setInterval(() => {
       setData(prev => {
         const newData = [...prev.slice(1)];
@@ -79,9 +96,11 @@ export default function Monitoring() {
       setSystemStats(prev => ({
         ...prev,
         cpu: Math.floor(Math.random() * 30) + 10,
-        ram: parseFloat((2.2 + Math.random() * 0.8).toFixed(1)),
         temp: Math.floor(Math.random() * 10) + 38
       }));
+      
+      // Update free storage and RAM usage periodically
+      fetchDeviceInfo();
 
       setActiveConnections(prev => prev.map(conn => {
         if (conn.status === 'Idle') return conn;
@@ -478,6 +497,7 @@ export default function Monitoring() {
           <div>
             <p className="text-[10px] font-bold text-on-surface-variant uppercase">Storage</p>
             <p className="font-headline font-bold text-lg">{systemStats.storage} GB</p>
+            <p className="text-[8px] text-on-surface-variant/60 font-bold uppercase">{systemStats.freeStorage} GB Free</p>
           </div>
         </div>
         <div className="bg-surface-container-low p-6 rounded-[2rem] border border-outline-variant/10 flex items-center gap-4">
