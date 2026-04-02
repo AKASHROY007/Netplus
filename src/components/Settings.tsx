@@ -9,9 +9,11 @@ import {
   Moon,
   Sun,
   RefreshCw,
-  AlertTriangle
+  AlertTriangle,
+  Sparkles,
+  X
 } from 'lucide-react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 
 export default function Settings() {
@@ -78,6 +80,15 @@ export default function Settings() {
   };
 
   const limitDisplay = formatDataLimit(dataLimit);
+
+  const [isChangelogOpen, setIsChangelogOpen] = useState(false);
+
+  const changelog = [
+    { title: 'Logical Network Hygiene', description: 'Data prevented is now calculated based on blocked apps.', type: 'feature' },
+    { title: 'Enhanced Firewall', description: 'Added "Active" and "Wi-Fi" filters for better control.', type: 'feature' },
+    { title: 'UI Refinement', description: 'More compact Network Hygiene card and optimized button sizes.', type: 'update' },
+    { title: 'Performance', description: 'Optimized background monitoring logic for lower battery impact.', type: 'update' }
+  ];
 
   const handleThemeChange = (newTheme: 'dark' | 'light') => {
     setTheme(newTheme);
@@ -306,8 +317,68 @@ export default function Settings() {
 
       {/* Version Number */}
       <div className="text-center pb-12 pt-2">
-        <p className="font-body text-[10px] text-on-surface-variant/40 uppercase tracking-[0.2em]">Version 1.2.1 (Beta)</p>
+        <button 
+          onClick={() => setIsChangelogOpen(true)}
+          className="group inline-flex flex-col items-center gap-1.5 transition-all active:scale-95"
+        >
+          <div className="px-3 py-1 rounded-full bg-primary/10 border border-primary/20 group-hover:bg-primary/20 transition-colors flex items-center gap-2">
+            <Sparkles className="w-3 h-3 text-primary" />
+            <span className="font-headline font-bold text-[10px] text-primary uppercase tracking-[0.1em]">Version 1.2.1 (Beta)</span>
+          </div>
+          <p className="font-body text-[9px] text-on-surface-variant/40 uppercase tracking-widest group-hover:text-primary/60 transition-colors">Tap to see what's new</p>
+        </button>
       </div>
+
+      {/* Changelog Modal */}
+      <AnimatePresence>
+        {isChangelogOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-surface/80 backdrop-blur-sm">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="w-full max-w-sm bg-surface-container-high rounded-[2.5rem] border border-outline-variant/20 shadow-2xl overflow-hidden"
+            >
+              <div className="p-6">
+                <div className="flex justify-between items-center mb-6">
+                  <div>
+                    <h3 className="font-headline font-bold text-xl text-on-surface">What's New</h3>
+                    <p className="text-xs text-on-surface-variant">Version 1.2.1 (Beta)</p>
+                  </div>
+                  <button 
+                    onClick={() => setIsChangelogOpen(false)}
+                    className="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <div className="space-y-4">
+                  {changelog.map((item, idx) => (
+                    <div key={idx} className="flex gap-3">
+                      <div className={cn(
+                        "w-1.5 h-1.5 rounded-full mt-1.5 shrink-0",
+                        item.type === 'feature' ? "bg-primary" : "bg-secondary"
+                      )} />
+                      <div>
+                        <p className="font-headline font-bold text-sm text-on-surface leading-tight">{item.title}</p>
+                        <p className="font-body text-xs text-on-surface-variant mt-0.5">{item.description}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <button 
+                  onClick={() => setIsChangelogOpen(false)}
+                  className="w-full mt-8 py-4 rounded-2xl bg-primary text-on-primary font-headline font-bold uppercase tracking-widest text-xs shadow-lg shadow-primary/20 active:scale-[0.98] transition-all"
+                >
+                  Got it
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </main>
   );
 }
