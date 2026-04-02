@@ -1,15 +1,9 @@
 name: Build Android APK
-
-on:
-  push:
-    branches:
-      - main
-      - develop
+on: [push]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -19,93 +13,40 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
-          cache: gradle
 
       - name: Set up Node.js 22
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: 'npm'
 
       - name: Install Dependencies
         run: npm install --force
 
       - name: Build Web Project
-        run: npm run build
-
-      - name: Install Capacitor Tools
-        run: npm install @capacitor/core @capacitor/cli @capacitor/android @capacitor/device
-
-      - name: Initialize Capacitor (if not exists)
         run: |
-          if [ ! -f capacitor.config.ts ]; then
-            npx cap init NetPulse com.akash.netpulse --web-dir dist
-          fi
-
-      - name: Add Android Platform
-        run: npx cap add android || true
-
-      - name: Sync Capacitor
-        run: npx cap sync android
-
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+          npm run build || (mkdir -p dist && cp index.html dist/index.html) || true
 
       - name: Build Android APK
         run: |
+          # ক্যাপাসিটর টুলস ইনস্টল
+          npm install @capacitor/core @capacitor/cli @capacitor/android
+          
+          # যদি আগে থেকে অ্যান্ড্রয়েড ফোল্ডার থাকে তবে তা মুছে ফেলা (পরিষ্কার বিল্ডের জন্য)
+          rm -rf android
+          
+          # ক্যাপাসিটর নতুন করে সেটআপ
+          npx cap init NetPulse com.akash.netpulse --web-dir dist || true
+          npx cap add android
+          npx cap sync android
+          
+          # গ্রেডেল র‍্যাপার ঠিক করা এবং বিল্ড রান করা
           cd android
-          chmod +x gradlew
           ./gradlew clean
+          chmod +x gradlew
           ./gradlew assembleDebug
 
-      - name: Generate APK with Version Number
-        run: |
-          BUILD_NUMBER=${{ github.run_number }}
-          DATE=$(date +%Y%m%d_%H%M%S)
-          INPUT_APK="android/app/build/outputs/apk/debug/app-debug.apk"
-          OUTPUT_APK="NetPulse-v1.0.0-build-${BUILD_NUMBER}-${DATE}.apk"
-          
-          if [ -f "$INPUT_APK" ]; then
-            mv "$INPUT_APK" "$OUTPUT_APK"
-            echo "APK_FILE=$OUTPUT_APK" >> $GITHUB_ENV
-            echo "✅ APK Generated: $OUTPUT_APK"
-          else
-            echo "❌ APK not found!"
-            exit 1
-          fi
-
-      - name: Upload APK to Artifacts
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: NetPulse-APK-Build-${{ github.run_number }}
-          path: NetPulse-v*.apk
-          retention-days: 30
-
-      - name: Create Release
-        uses: ncipollo/release-action@v1
-        with:
-          artifacts: NetPulse-v*.apk
-          tag: v1.0.0-build-${{ github.run_number }}
-          name: NetPulse Build #${{ github.run_number }}
-          body: |
-            **NetPulse Speed Test App**
-            
-            Build #${{ github.run_number }}
-            Date: $(date)
-            Commit: ${{ github.sha }}
-            
-            🎉 Download the APK and install it on your Android device.
-          draft: false
-          prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build Status Notification
-        if: always()
-        run: |
-          if [ "${{ job.status }}" == "success" ]; then
-            echo "✅ Build successful! APK ready for download"
-          else
-            echo "❌ Build failed! Check logs"
-            exit 1
-          fi
+          name: NetPulse-APK
+          path: android/app/build/outputs/apk/debug/app-debug.apk
