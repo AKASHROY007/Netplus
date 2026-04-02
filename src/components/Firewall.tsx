@@ -29,7 +29,8 @@ const INITIAL_APP_LIST = [
     color: 'text-primary',
     boxColor: 'bg-on-primary-container',
     mobileData: true,
-    wifi: true 
+    wifi: true,
+    dataUsage: 450 // MB
   },
   { 
     id: 2, 
@@ -39,7 +40,8 @@ const INITIAL_APP_LIST = [
     color: 'text-error',
     boxColor: 'bg-error-container',
     mobileData: false,
-    wifi: true 
+    wifi: true,
+    dataUsage: 1200 // MB
   },
   { 
     id: 3, 
@@ -49,7 +51,8 @@ const INITIAL_APP_LIST = [
     color: 'text-secondary',
     boxColor: 'bg-secondary-container',
     mobileData: true,
-    wifi: true 
+    wifi: true,
+    dataUsage: 320 // MB
   },
   { 
     id: 4, 
@@ -60,7 +63,8 @@ const INITIAL_APP_LIST = [
     boxColor: 'bg-surface-container-highest',
     mobileData: true,
     wifi: true,
-    isSystem: true
+    isSystem: true,
+    dataUsage: 150 // MB
   },
   { 
     id: 6, 
@@ -71,7 +75,8 @@ const INITIAL_APP_LIST = [
     boxColor: 'bg-on-primary-container',
     mobileData: true,
     wifi: true,
-    isSystem: true
+    isSystem: true,
+    dataUsage: 80 // MB
   },
   { 
     id: 7, 
@@ -82,7 +87,8 @@ const INITIAL_APP_LIST = [
     boxColor: 'bg-secondary-container',
     mobileData: true,
     wifi: true,
-    isSystem: true
+    isSystem: true,
+    dataUsage: 45 // MB
   },
   { 
     id: 5, 
@@ -92,7 +98,8 @@ const INITIAL_APP_LIST = [
     color: 'text-tertiary',
     boxColor: 'bg-on-tertiary-fixed-variant',
     mobileData: false,
-    wifi: false 
+    wifi: false,
+    dataUsage: 280 // MB
   },
 ];
 
@@ -124,6 +131,16 @@ export default function Firewall() {
   };
 
   const blockedCount = globalBlock ? apps.length : apps.filter(app => !app.mobileData && !app.wifi).length;
+  
+  const dataPrevented = apps.reduce((acc, app) => {
+    const isBlocked = globalBlock || (!app.mobileData && !app.wifi);
+    return isBlocked ? acc + (app as any).dataUsage : acc;
+  }, 0);
+
+  const formatData = (mb: number) => {
+    if (mb >= 1000) return `${(mb / 1000).toFixed(1)} GB`;
+    return `${mb} MB`;
+  };
 
   return (
     <main className="pt-40 px-6 pb-6 max-w-2xl mx-auto w-full relative flex flex-col">
@@ -335,7 +352,7 @@ export default function Firewall() {
             <p className="text-xs text-on-surface-variant max-w-[180px]">{blockedCount} application{blockedCount !== 1 ? 's are' : ' is'} currently blocked.</p>
           </div>
           <div className="text-right">
-            <div className="text-2xl font-headline font-black text-secondary tracking-tighter">1.2 GB</div>
+            <div className="text-2xl font-headline font-black text-secondary tracking-tighter">{formatData(dataPrevented)}</div>
             <div className="text-[9px] uppercase tracking-widest font-bold text-on-surface-variant">Data Prevented</div>
           </div>
         </div>
