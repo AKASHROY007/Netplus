@@ -126,6 +126,54 @@ export default function App() {
     }
   }, []);
 
+  // Background network simulation driver
+  useEffect(() => {
+    const interval = setInterval(() => {
+      // Find global block and configurations
+      const isGlobalBlocked = localStorage.getItem('netpulse-global-block') === 'true';
+      const isDataSaver = localStorage.getItem('netpulse-data-saver') === 'true';
+
+      let download = 0;
+      let upload = 0;
+      let ping = 0;
+      let jitter = 0;
+
+      if (!isGlobalBlocked) {
+        // Base speeds in Mbps
+        let maxDown = 85;
+        let maxUp = 22;
+
+        if (isDataSaver) {
+          maxDown = 4.8; // throttle speeds when saver is active
+          maxUp = 1.2;
+        }
+
+        download = parseFloat((Math.random() * (maxDown - (maxDown * 0.4)) + (maxDown * 0.4)).toFixed(1));
+        upload = parseFloat((Math.random() * (maxUp - (maxUp * 0.4)) + (maxUp * 0.4)).toFixed(1));
+        ping = Math.floor(Math.random() * 8) + 12;
+        jitter = Math.floor(Math.random() * 2) + 1;
+      }
+
+      // Dispatch CustomEvent
+      const event = new CustomEvent('networkUpdate', {
+        detail: { download, upload, ping, jitter }
+      });
+      window.dispatchEvent(event);
+
+      // Mutate mock monthly usage slightly to make it crawl upwards dynamically
+      if (!isGlobalBlocked) {
+        const storedUsage = parseFloat(localStorage.getItem('netpulse-monthly-usage') || '332.400');
+        // Accumulate based on current speed
+        const addedGB = (download / 8) * (2 / 1024) * 0.1; // simulated byte integration
+        const newUsage = (storedUsage + addedGB).toFixed(5);
+        localStorage.setItem('netpulse-monthly-usage', newUsage);
+        window.dispatchEvent(new Event('netpulse-monthly-usage-updated'));
+      }
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {

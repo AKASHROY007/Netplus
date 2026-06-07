@@ -156,12 +156,13 @@ const DATA_SETS: Record<string, any[]> = {
 const HISTORY_ITEMS = [
   { id: 1, type: 'wifi', name: 'Starlink', code: '12-B', subtitle: '(Home_WiFi_5G)', time: 'Today, 10:42 AM • Berlin, DE', download: 342.1, upload: 42.5, ping: '18', jitter: '2', strength: 0.9, color: 'text-primary', ip: '192.168.1.1', provider: 'SpaceX Starlink', status: 'Connected' },
   { id: 2, type: 'signal', name: 'LTE Mobile', code: '5G', subtitle: 'Mobile Data', time: 'Yesterday, 08:15 PM • Mobile Data', download: 89.4, upload: 12.8, ping: '42', jitter: '8', strength: 0.6, color: 'text-secondary', ip: '10.0.0.1', provider: 'T-Mobile', status: 'Connected' },
-  { id: 3, type: 'fiber', name: 'Office Fiber', code: '1', subtitle: 'Berlin, DE', time: '2 days ago • Berlin, DE', download: 944.8, upload: 890.2, ping: '4', jitter: '1', strength: 1.0, color: 'text-primary', ip: '172.16.0.1', provider: 'Deutsche Telekom', status: 'Disconnected' },
+  { id: 3, type: 'fiber', name: 'Office Fiber', code: '1', subtitle: 'Berlin, DE', time: '2 days ago • Berlin, DE', download: 944.8, upload: 890.2, ping: '4', jitter: '1', strength: 1.0, color: 'text-primary', ip: '172.16.0.1', provider: 'Deutsche Telekom', status: 'Disconnected' }
 ];
 
 export default function Dashboard() {
   const [timeRange, setTimeRange] = useState('Daily');
-  const [selectedTest, setSelectedTest] = useState<typeof HISTORY_ITEMS[0] | null>(null);
+  const [historyItems, setHistoryItems] = useState<any[]>([]);
+  const [selectedTest, setSelectedTest] = useState<any | null>(null);
   const [unit, setUnit] = useState<'Mbps' | 'MB/s'>(() => {
     return (localStorage.getItem('netpulse-unit') as 'Mbps' | 'MB/s') || 'Mbps';
   });
@@ -169,9 +170,28 @@ export default function Dashboard() {
     const saved = localStorage.getItem('netpulse-data-limit-mb');
     return saved ? parseInt(saved) : 512000;
   });
+  const [monthlyUsage, setMonthlyUsage] = useState(() => {
+    const saved = localStorage.getItem('netpulse-monthly-usage');
+    if (!saved) {
+      localStorage.setItem('netpulse-monthly-usage', '332.400');
+      return 332.4;
+    }
+    return parseFloat(saved);
+  });
 
-  // Listen for changes
-  React.useEffect(() => {
+  // Load and listen for changes
+  useEffect(() => {
+    const loadHistory = () => {
+      const stored = localStorage.getItem('netpulse-speed-tests');
+      if (stored) {
+        setHistoryItems(JSON.parse(stored));
+      } else {
+        localStorage.setItem('netpulse-speed-tests', JSON.stringify(HISTORY_ITEMS));
+        setHistoryItems(HISTORY_ITEMS);
+      }
+    };
+    loadHistory();
+
     const handleUnitChange = () => {
       const newUnit = (localStorage.getItem('netpulse-unit') as 'Mbps' | 'MB/s') || 'Mbps';
       setUnit(newUnit);
@@ -180,11 +200,21 @@ export default function Dashboard() {
       const saved = localStorage.getItem('netpulse-data-limit-mb');
       if (saved) setDataLimit(parseInt(saved));
     };
+    const handleUsageChange = () => {
+      const saved = localStorage.getItem('netpulse-monthly-usage');
+      if (saved) setMonthlyUsage(parseFloat(saved));
+    };
+
     window.addEventListener('netpulse-unit-change', handleUnitChange);
     window.addEventListener('storage', handleLimitChange);
+    window.addEventListener('netpulse-speed-tests-updated', loadHistory);
+    window.addEventListener('netpulse-monthly-usage-updated', handleUsageChange);
+
     return () => {
       window.removeEventListener('netpulse-unit-change', handleUnitChange);
       window.removeEventListener('storage', handleLimitChange);
+      window.removeEventListener('netpulse-speed-tests-updated', loadHistory);
+      window.removeEventListener('netpulse-monthly-usage-updated', handleUsageChange);
     };
   }, []);
 
@@ -204,9 +234,8 @@ export default function Dashboard() {
   const totalUsage = (totalDownload + totalUpload).toFixed(1);
 
   // Gauge calculation
-  const mockMonthlyUsageGB = 332.4; 
   const limitGB = dataLimit / 1024;
-  const usedPercent = Math.min(100, Math.round((mockMonthlyUsageGB / limitGB) * 100));
+  const usedPercent = Math.min(100, Math.round((monthlyUsage / limitGB) * 100));
   
   const gaugeData = [
     { name: 'Used', value: usedPercent },
@@ -217,7 +246,7 @@ export default function Dashboard() {
     const headers = ['ID', 'Type', 'Name', 'Code', 'Subtitle', 'Time', 'Download (Mbps)', 'Upload (Mbps)', 'Ping (ms)', 'Jitter (ms)', 'IP', 'Provider', 'Status'];
     const csvContent = [
       headers.join(','),
-      ...HISTORY_ITEMS.map(item => [
+      ...historyItems.map(item => [
         item.id,
         item.type,
         `"${item.name}"`,
@@ -485,7 +514,7 @@ export default function Dashboard() {
           </button>
         </div>
         <div className="space-y-3">
-          {HISTORY_ITEMS.map((item, idx) => (
+          {historyItems.map((item, idx) => (
             <motion.div 
               key={item.id} 
               initial={{ opacity: 0, y: 20 }}

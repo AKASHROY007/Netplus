@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Shield, 
   Search, 
@@ -104,9 +104,31 @@ const INITIAL_APP_LIST = [
 ];
 
 export default function Firewall() {
-  const [apps, setApps] = useState(INITIAL_APP_LIST);
-  const [globalBlock, setGlobalBlock] = useState(false);
-  const [showSystem, setShowSystem] = useState(false);
+  const [apps, setApps] = useState(() => {
+    const stored = localStorage.getItem('netpulse-firewall-apps');
+    return stored ? JSON.parse(stored) : INITIAL_APP_LIST;
+  });
+  const [globalBlock, setGlobalBlock] = useState(() => {
+    const stored = localStorage.getItem('netpulse-global-block');
+    return stored ? stored === 'true' : false;
+  });
+  const [showSystem, setShowSystem] = useState(() => {
+    const stored = localStorage.getItem('netpulse-show-system');
+    return stored ? stored === 'true' : false;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('netpulse-firewall-apps', JSON.stringify(apps));
+  }, [apps]);
+
+  useEffect(() => {
+    localStorage.setItem('netpulse-global-block', String(globalBlock));
+  }, [globalBlock]);
+
+  useEffect(() => {
+    localStorage.setItem('netpulse-show-system', String(showSystem));
+  }, [showSystem]);
+
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | 'All'>('All');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
